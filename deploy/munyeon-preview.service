@@ -1,0 +1,25 @@
+[Unit]
+Description=Munyeon no-AI preview
+After=network.target
+
+[Service]
+Type=simple
+User=munyeon
+Group=munyeon
+WorkingDirectory=/srv/munyeon-preview/current
+EnvironmentFile=/etc/munyeon-preview.env
+ExecStart=/srv/munyeon-preview/runtime/node server/index.js
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=55
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/munyeon-preview/data
+MemoryMax=384M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

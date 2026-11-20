@@ -1,11 +1,15 @@
 # 문연
 
-교수자가 과제 지침을 설정하고, 학생이 해당 지침에 맞춰 AI 학습과 과제 제출을 진행하는 로컬 웹 앱입니다. 교수자는 제출물과 학생이 공유한 사례를 바탕으로 질문을 준비하고 구술평가 결과를 저장할 수 있습니다.
+교수자가 과제 지침을 설정하고, 학생이 지침을 확인해 과제를 제출하는 웹 앱입니다. 교수자는 제출물과 학생이 공유한 사례를 바탕으로 질문을 준비하고 구술평가 결과를 저장할 수 있습니다.
 
 ## 프로젝트 현황
 
+2026-11-20부터 시안의 AI 모델 연결은 기본 비활성화입니다. 학생은 **과제 안내 → 과제 제출**, 교수자는 **제출물 검토 → 직접 질문 작성 → 구술평가** 흐름으로 사용합니다. 모델 호출 코드는 향후 재검토를 위해 보존하지만 이번 서버에서는 실행하지 않습니다.
+
 현재는 **단일 과제의 학습·제출·구술평가 흐름을 구현한 동적 웹 앱 MVP**입니다. React 화면, Node.js API, SQLite 영속 저장이 연결되어 있습니다. AI 제공자 연결 코드는 있지만, 실제 모델 품질과 외부 운영 배포는 별도로 검증해야 합니다. 현재 디자인은 재설계 전 검토 대상입니다.
 
+- [Canvas 연동 가능성](docs/CANVAS_INTEGRATION.md): 학생·교수자 진입점, 조회 범위와 학교 승인 조건
+- [무료 주소 서버 시안](docs/PREVIEW_DEPLOYMENT.md): 기존 홈서버에 별도 서비스로 운영하는 구성
 - [목표·범위·진행 현황](docs/PROJECT_STATUS.md): 구현한 기능, 검증 범위, 남은 작업과 단계별 완료 조건
 - [동적 서버 운영 전환 안내](docs/DYNAMIC_SERVER.md): 현재 서버 구조, 배포 순서와 확장 시 필요한 변경
 
@@ -35,7 +39,7 @@ npm start
 
 ## AI 모델 연결
 
-`.env.example`을 `.env`로 복사하고 `MUNYEON_AI_URL`과 `MUNYEON_AI_MODEL`을 설정합니다. 원격 제공자가 키를 요구하면 `MUNYEON_AI_KEY`를 추가하고 서버를 재시작합니다.
+현재 단계에서는 AI 모델을 연결하지 않습니다. 이후 명시적으로 다시 활성화할 때만 `.env.example`을 `.env`로 복사하고 `MUNYEON_AI_ENABLED=1`, `MUNYEON_AI_URL`, `MUNYEON_AI_MODEL`을 설정합니다. 원격 제공자가 키를 요구하면 `MUNYEON_AI_KEY`를 추가하고 서버를 재시작합니다.
 
 - URL에는 `/chat/completions` 앞의 기본 주소를 입력합니다. 로컬 Ollama 예시는 `http://127.0.0.1:11434/v1`입니다. [Ollama API 문서](https://docs.ollama.com/api/openai-compatibility)
 - 추천 질문은 Chat Completions의 JSON 응답 형식을 지원하는 모델을 사용합니다. [OpenAI API 문서](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)

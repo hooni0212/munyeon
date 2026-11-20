@@ -245,7 +245,7 @@ function Submit({ config, turns, selected, onShare, submission, onSubmit, draft,
       <Panel title="교수자에게 공유되는 내용"><div className="panel-body">
         <dl className="details"><div><dt>제출물</dt><dd>제목과 본문</dd></div>
           <div><dt>이용 요약</dt><dd>{[...new Set(turns.map(turn => modes[turn.mode]))].join(' · ') || '문연 내 이용 기록 없음'}</dd></div>
-          <div><dt>공유 사례</dt><dd>{selectedTurn?.reply || '선택한 학습실 답변 없음'}</dd></div>
+          {turns.length > 0 && <div><dt>공유 사례</dt><dd>{selectedTurn?.reply || '선택한 학습실 답변 없음'}</dd></div>}
           {draft.explanation.trim() && <div><dt>활용 설명</dt><dd>{draft.explanation}</dd></div>}
         </dl>
         {selectedTurn && <button className="text-button remove" onClick={() => onShare(selected)}>공유 사례 제외</button>}
@@ -316,9 +316,8 @@ function Review({ list, detail, onSelect, onUpdate, onOral, onRefresh, refreshin
             <div className="actions">
               <button className="secondary" disabled={busy || writing || editing !== null}
                 onClick={() => { setWriting(true); setQuestion(''); }}>직접 작성</button>
-              <button className="primary" disabled={!model || busy} onClick={() => update('/suggest', 'POST', {}, 'AI 질문 후보를 추가했어요.')}>AI 추천</button>
+              {model && <button className="primary" disabled={busy} onClick={() => update('/suggest', 'POST', {}, 'AI 질문 후보를 추가했어요.')}>AI 추천</button>}
             </div>
-            {!model && <p className="muted small">모델을 연결하면 AI 추천을 사용할 수 있어요.</p>}
             {writing && <div className="question"><p className="small muted">선택 근거 · 문단 {active + 1}</p>{questionEditor(null)}</div>}
             <Notice message={message} />
             {detail.questions.map(item => {
@@ -387,7 +386,7 @@ function Oral({ detail, onUpdate, onReview }) {
 
 function Workspace({ session, onLogout }) {
   const teacher = session.user.role === 'teacher';
-  const [page, setPage] = useState(teacher ? 'review' : 'learn');
+  const [page, setPage] = useState(teacher ? 'review' : session.model ? 'learn' : 'guidance');
   const [config, setConfig] = useState(null);
   const [list, setList] = useState([]);
   const [detail, setDetail] = useState(null);
@@ -425,7 +424,7 @@ function Workspace({ session, onLogout }) {
 
   const menu = teacher
     ? [['review', '제출물 검토'], ['setup', '과제 설정'], ['oral', '구술평가']]
-    : [['learn', 'AI 학습실'], ['submit', '과제 제출']];
+    : [[session.model ? 'learn' : 'guidance', session.model ? 'AI 학습실' : '과제 안내'], ['submit', '과제 제출']];
   const share = id => setSelected(current => current === id ? null : id);
   const select = id => run(async () => setDetail(await api('/submissions/' + id)));
   const refresh = () => run(async () => {
@@ -455,7 +454,11 @@ function Workspace({ session, onLogout }) {
         <Notice message={message} />
         {loading && <p role="status" className="muted">과제를 불러오는 중…</p>}
         {config && page === 'setup' && <Setup config={config} onSave={setConfig} />}
-        {config && !teacher && <Learn config={config} model={session.model} turns={turns} setTurns={setTurns}
+        {config && page === 'guidance' && <>
+          <Heading title="과제 안내" subtitle={config.title} action={<button className="primary" onClick={() => setPage('submit')}>과제 작성하기 →</button>} />
+          <Panel title="과제 지침"><div className="panel-body"><Guidance config={config} /></div></Panel>
+        </>}
+        {config && !teacher && session.model && <Learn config={config} model={session.model} turns={turns} setTurns={setTurns}
           selected={selected} onShare={share} onSubmitPage={() => setPage('submit')} active={page === 'learn'} />}
         {config && page === 'submit' && <Submit config={config} turns={turns} selected={selected} onShare={share}
           submission={submission} onSubmit={setSubmission} draft={draft} setDraft={setDraft} />}

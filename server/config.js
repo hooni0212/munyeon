@@ -17,5 +17,5 @@ export function deploymentConfig(env = process.env) {
     }
     origin = address.origin;
   }
-  return { host, port, origin, aiDailyLimit, trustProxy: production && env.MUNYEON_TRUST_PROXY === '1' };
+  return { host, port, origin, aiDailyLimit, aiEnabled: env.MUNYEON_AI_ENABLED === '1', trustProxy: production && env.MUNYEON_TRUST_PROXY === '1' };
 }

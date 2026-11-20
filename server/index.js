@@ -13,10 +13,10 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const dist = resolve(root, 'dist');
 const database = resolve(root, process.env.MUNYEON_DB || 'data/munyeon.sqlite');
 await mkdir(dirname(database), { recursive: true });
-const app = createApp({ database, origin: config.origin, aiDailyLimit: config.aiDailyLimit, model: createModel({
+const app = createApp({ database, origin: config.origin, aiDailyLimit: config.aiDailyLimit, model: createModel(config.aiEnabled ? {
   baseUrl: process.env.MUNYEON_AI_URL, model: process.env.MUNYEON_AI_MODEL, key: process.env.MUNYEON_AI_KEY,
   outputLimitField: process.env.MUNYEON_AI_OUTPUT_LIMIT_FIELD,
-}) });
+} : {}) });
 const media = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 
 const server = createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, async (req, res) => {
