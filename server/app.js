@@ -1,5 +1,5 @@
 import { createModel } from './model.js';
-import { defaults, modes, openStore } from './store.js';
+import { modes, openStore, splitParagraphs } from './store.js';
 
 function fail(status, message) {
   throw Object.assign(new Error(message), { status });
@@ -16,6 +16,22 @@ function input(value, label, max, optional = false) {
 function number(value, max) {
   if (!Number.isInteger(value) || value < 0 || value > max) fail(400, '선택한 값을 확인해 주세요.');
   return value;
+}
+
+const configLimits = { title: 160, course: 160, section: 60, due: 16, prompt: 1600, allowed: 500, restricted: 500, rubric: 1600 };
+const optionalConfig = new Set(['section', 'due', 'allowed', 'restricted']);
+const reportModes = ['', 'shared', 'manual', 'none'];
+
+function draftReport(value) {
+  const report = value && typeof value === 'object' ? value : {};
+  if (!reportModes.includes(report.mode ?? '')) fail(400, 'AI 활용 방식을 확인해 주세요.');
+  return {
+    mode: report.mode ?? '',
+    messageId: report.messageId == null ? null : number(report.messageId, Number.MAX_SAFE_INTEGER),
+    paragraph: number(report.paragraph ?? 0, 1000),
+    explanation: input(report.explanation, '활용 설명', 1600, true),
+    manualExplanation: input(report.manualExplanation, '활용 설명', 1600, true),
+  };
 }
 
 export function createApp({ database, model = createModel(), origin = null, aiDailyLimit = 120 }) {
@@ -66,7 +82,9 @@ export function createApp({ database, model = createModel(), origin = null, aiDa
   }
   route('GET', /^\/api\/assignment$/, 'member', () => store.assignment());
   route('PUT', /^\/api\/assignment$/, 'teacher', ({ body }) => {
-    const config = Object.fromEntries(Object.keys(defaults).map(key => [key, input(body[key], key, 1600, key === 'materials')]));
+    const config = Object.fromEntries(Object.entries(configLimits).map(([key, max]) =>
+      [key, input(body[key], key, max, optionalConfig.has(key))]));
+    if (config.due && !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(config.due)) fail(400, '제출 마감을 확인해 주세요.');
     store.run('UPDATE assignment SET config=? WHERE id=1', JSON.stringify(config));
     return config;
   });
@@ -84,40 +102,64 @@ export function createApp({ database, model = createModel(), origin = null, aiDa
     return { id: Number(record.lastInsertRowid), mode, prompt, reply };
   });
 
-  route('GET', /^\/api\/submission$/, 'student', ({ user }) => {
-    const row = store.get('SELECT id,title,created_at AS createdAt FROM submissions WHERE student_id=?', user.id);
-    return { submission: row ?? null };
-  });
+  const ownSubmission = user => {
+    const row = store.get('SELECT id FROM submissions WHERE student_id=?', user.id);
+    if (!row) return null;
+    const { id, title, createdAt, paragraphs, evidence } = store.submission(row.id);
+    return { id, title, createdAt, paragraphs, evidence };
+  };
+  route('GET', /^\/api\/submission$/, 'student', ({ user }) => ({ submission: ownSubmission(user) }));
   route('POST', /^\/api\/submission$/, 'student', ({ user, body }) => {
     const title = input(body.title, '제목', 160);
-    const paragraphs = input(body.text, '본문', 16000).split(/\n\s*\n/).map(text => text.trim());
-    const explanation = input(body.explanation, '활용 설명', 1600, true);
-    let evidence = null;
-    if (body.messageId || explanation) {
-      const paragraph = number(body.paragraph, paragraphs.length - 1);
-      const turn = body.messageId ? store.get('SELECT reply FROM messages WHERE id=? AND student_id=?',
-        number(body.messageId, Number.MAX_SAFE_INTEGER), user.id) : null;
-      if (body.messageId && !turn) fail(400, '공유할 답변을 확인해 주세요.');
-      evidence = { paragraph, explanation, excerpt: turn?.reply ?? '', source: turn ? '문연 학습실' : '학생 자기보고' };
-    }
+    const paragraphs = splitParagraphs(input(body.text, '본문', 16000));
+    const report = draftReport(body.report);
+    let evidence;
+    if (report.mode === 'none') evidence = { mode: 'none' };
+    else if (report.mode === 'manual') evidence = { mode: 'manual', explanation: input(report.manualExplanation, '활용 설명', 1600) };
+    else if (report.mode === 'shared') {
+      const turn = report.messageId && store.get('SELECT prompt,reply FROM messages WHERE id=? AND student_id=?', report.messageId, user.id);
+      if (!turn) fail(400, '연결할 대화를 확인해 주세요.');
+      evidence = { mode: 'shared', paragraph: number(report.paragraph, paragraphs.length - 1),
+        explanation: input(report.explanation, '활용 설명', 1600), question: turn.prompt, excerpt: turn.reply };
+    } else fail(400, 'AI 활용 방식을 선택해 주세요.');
     const usedModes = store.all('SELECT DISTINCT mode FROM messages WHERE student_id=?', user.id).map(row => row.mode);
-    return store.transaction(() => {
+    store.transaction(() => {
       if (store.get('SELECT id FROM submissions WHERE student_id=?', user.id)) fail(409, '이미 제출한 과제예요.');
-      const createdAt = new Date().toISOString();
-      const result = store.run('INSERT INTO submissions(student_id,title,paragraphs,evidence,modes,config,created_at) VALUES(?,?,?,?,?,?,?)',
+      store.run('INSERT INTO submissions(student_id,title,paragraphs,evidence,modes,config,created_at) VALUES(?,?,?,?,?,?,?)',
         user.id, title, JSON.stringify(paragraphs), JSON.stringify(evidence), JSON.stringify(usedModes),
-        JSON.stringify(store.assignment()), createdAt);
-      return { submission: { id: Number(result.lastInsertRowid), title, createdAt } };
+        JSON.stringify(store.assignment()), new Date().toISOString());
+      store.run('DELETE FROM drafts WHERE student_id=?', user.id);
     });
+    return { submission: ownSubmission(user) };
   });
 
-  route('GET', /^\/api\/submissions$/, 'teacher', () => store.all(`
-    SELECT submissions.id, submissions.title, users.name,
-      CASE WHEN evaluations.reason IS NOT NULL THEN '평가 완료'
-           WHEN evaluations.question_id IS NOT NULL THEN '질문 확정'
+  route('GET', /^\/api\/draft$/, 'student', ({ user }) => {
+    const row = store.get('SELECT title,body,report,updated_at AS updatedAt FROM drafts WHERE student_id=?', user.id);
+    return row ? { ...row, report: JSON.parse(row.report) } : { title: '', body: '', report: draftReport({}), updatedAt: null };
+  });
+  route('PUT', /^\/api\/draft$/, 'student', ({ user, body }) => {
+    const title = input(body.title, '제목', 160, true);
+    const text = input(body.body, '본문', 16000, true) === '' ? '' : body.body;
+    const report = draftReport(body.report);
+    const updatedAt = new Date().toISOString();
+    store.transaction(() => {
+      if (store.get('SELECT id FROM submissions WHERE student_id=?', user.id)) fail(409, '이미 제출한 과제예요.');
+      store.run(`INSERT INTO drafts VALUES (?,?,?,?,?) ON CONFLICT(student_id) DO UPDATE SET
+        title=excluded.title, body=excluded.body, report=excluded.report, updated_at=excluded.updated_at`,
+      user.id, title, text, JSON.stringify(report), updatedAt);
+    });
+    return { updatedAt };
+  });
+
+  route('GET', /^\/api\/roster$/, 'teacher', () => store.all(`
+    SELECT users.id AS studentId, users.name, submissions.id, submissions.title, submissions.created_at AS createdAt,
+      CASE WHEN submissions.id IS NULL THEN '미제출'
+           WHEN evaluations.reason IS NOT NULL THEN '평가 완료'
+           WHEN evaluations.question_id IS NOT NULL THEN '질문 준비 완료'
            ELSE '검토 대기' END AS status
-    FROM submissions JOIN users ON users.id=submissions.student_id
-    LEFT JOIN evaluations ON evaluations.submission_id=submissions.id ORDER BY submissions.id`));
+    FROM users LEFT JOIN submissions ON submissions.student_id=users.id
+    LEFT JOIN evaluations ON evaluations.submission_id=submissions.id
+    WHERE users.role='student' ORDER BY submissions.id IS NULL, submissions.id, users.name`));
   route('GET', /^\/api\/submissions\/(\d+)$/, 'teacher', ({ params }) => submissionFor(params[0]));
   route('POST', /^\/api\/submissions\/(\d+)\/suggest$/, 'teacher', async ({ params, user }) => {
     const submission = submissionFor(params[0]);
@@ -134,33 +176,22 @@ export function createApp({ database, model = createModel(), origin = null, aiDa
       return submissionFor(submission.id);
     });
   });
-  route('POST', /^\/api\/submissions\/(\d+)\/questions$/, 'teacher', ({ params, body }) => {
-    const submission = submissionFor(params[0]);
-    store.run('INSERT INTO questions(submission_id,paragraph,text,source) VALUES(?,?,?,?)', submission.id,
-      number(body.paragraph, submission.paragraphs.length - 1), input(body.text, '질문', 1200), '직접 작성');
-    return submissionFor(submission.id);
-  });
-  route('PATCH', /^\/api\/submissions\/(\d+)\/questions\/(\d+)$/, 'teacher', ({ params, body }) => {
-    const submission = submissionFor(params[0]);
-    const question = submission.questions.find(item => item.id === Number(params[1]));
-    if (!question) fail(404, '질문을 찾을 수 없어요.');
+  route('PUT', /^\/api\/submissions\/(\d+)\/question$/, 'teacher', ({ params, body }) => {
     const text = input(body.text, '질문', 1200);
     return store.transaction(() => {
-      if (question.text !== text) {
-        store.run('UPDATE questions SET text=? WHERE id=?', text, question.id);
-        store.run('UPDATE evaluations SET reason=NULL, transfer=NULL, memo=\'\' WHERE submission_id=? AND question_id=?',
-          submission.id, question.id);
+      const submission = submissionFor(params[0]);
+      const paragraph = number(body.paragraph, submission.paragraphs.length - 1);
+      const current = submission.questions.find(item => item.id === submission.evaluation?.questionId);
+      if (!current) {
+        const result = store.run('INSERT INTO questions(submission_id,paragraph,text,source) VALUES(?,?,?,?)',
+          submission.id, paragraph, text, '직접 작성');
+        store.run('INSERT INTO evaluations(submission_id,question_id) VALUES(?,?)', submission.id, Number(result.lastInsertRowid));
+      } else if (current.text !== text || current.paragraph !== paragraph) {
+        store.run('UPDATE questions SET text=?, paragraph=? WHERE id=?', text, paragraph, current.id);
+        store.run('UPDATE evaluations SET reason=NULL, transfer=NULL, memo=\'\' WHERE submission_id=?', submission.id);
       }
       return submissionFor(submission.id);
     });
-  });
-  route('PUT', /^\/api\/submissions\/(\d+)\/confirm$/, 'teacher', ({ params, body }) => {
-    const submission = submissionFor(params[0]);
-    if (!submission.questions.some(question => question.id === body.questionId)) fail(400, '확정할 질문을 선택해 주세요.');
-    store.run(`INSERT INTO evaluations(submission_id,question_id) VALUES(?,?)
-      ON CONFLICT(submission_id) DO UPDATE SET question_id=excluded.question_id,reason=NULL,transfer=NULL,memo=''
-      WHERE evaluations.question_id<>excluded.question_id`, submission.id, body.questionId);
-    return submissionFor(submission.id);
   });
   route('PUT', /^\/api\/submissions\/(\d+)\/evaluation$/, 'teacher', ({ params, body }) => {
     const reason = number(body.reason, 2);

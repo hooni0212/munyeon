@@ -53,26 +53,42 @@ test('persists an assignment from scoped tutoring to oral evaluation', async () 
     assert.equal((await call(app, 'GET', '/assignment')).status, 401);
     assert.equal((await call(app, 'PUT', '/assignment', student, defaults)).status, 403);
     assert.equal((await call(app, 'GET', '/learning', teacher)).status, 403);
-    const config = { ...defaults, goal: '표본의 극단값과 대표값을 비교한다.' };
+    const config = { ...defaults, prompt: '표본의 극단값과 대표값을 비교한다.', due: '2026-11-27T23:59' };
     assert.deepEqual((await call(app, 'PUT', '/assignment', teacher, config)).body, config);
+    assert.equal((await call(app, 'PUT', '/assignment', teacher, { ...config, due: '다음 주' })).status, 400);
     const privateTurn = await call(app, 'POST', '/learning', student, { mode: 'concept', prompt: '교수자에게 공유하지 않을 질문' });
     const sharedTurn = await call(app, 'POST', '/learning', student, { mode: 'hint', prompt: '어떻게 비교할까요?' });
     assert.equal(privateTurn.status, 200);
     assert.equal(sharedTurn.status, 200);
-    assert.ok(sent[0].messages[0].content.includes(config.goal));
+    assert.ok(sent[0].messages[0].content.includes(config.prompt));
     assert.equal(sent[1].messages.length, 4);
     assert.deepEqual((await call(app, 'GET', '/learning', other)).body, []);
 
-    const report = { title: '대표값 보고서', text: '연구 개요\n\n중앙값을 선택했다.', explanation: '극단값을 고려했다.', paragraph: 1, messageId: sharedTurn.body.id };
+    const draft = { title: '대표값 보고서', body: '연구 개요\n\n중앙값을 선택했다.', report: { mode: 'shared', messageId: sharedTurn.body.id, paragraph: 1, explanation: '극단값을 고려했다.' } };
+    assert.equal((await call(app, 'PUT', '/draft', teacher, draft)).status, 403);
+    assert.equal((await call(app, 'PUT', '/draft', student, { ...draft, report: { mode: 'copied' } })).status, 400);
+    assert.equal((await call(app, 'PUT', '/draft', student, draft)).status, 200);
+    assert.equal((await call(app, 'GET', '/draft', student)).body.body, draft.body);
+    assert.equal((await call(app, 'GET', '/draft', other)).body.body, '');
+
+    const report = { title: draft.title, text: draft.body, report: draft.report };
+    assert.equal((await call(app, 'POST', '/submission', student, { ...report, report: {} })).status, 400);
     assert.equal((await call(app, 'POST', '/submission', other, report)).status, 400);
     const sentReport = await call(app, 'POST', '/submission', student, report);
     assert.equal(sentReport.status, 200);
+    assert.deepEqual(sentReport.body.submission.paragraphs, ['연구 개요', '중앙값을 선택했다.']);
     assert.equal((await call(app, 'POST', '/submission', student, report)).status, 409);
-    assert.equal((await call(app, 'POST', '/submission', other, { title: '독립 작성', text: '본문' })).status, 200);
+    assert.equal((await call(app, 'GET', '/draft', student)).body.body, '');
+    assert.equal((await call(app, 'PUT', '/draft', student, draft)).status, 409);
+    assert.equal((await call(app, 'POST', '/submission', other, { title: '독립 작성', text: '본문', report: { mode: 'none' } })).status, 200);
     const path = '/submissions/' + sentReport.body.submission.id;
     assert.equal((await call(app, 'GET', path, other)).status, 403);
+    assert.equal((await call(app, 'GET', '/roster', other)).status, 403);
+    assert.deepEqual((await call(app, 'GET', '/roster', teacher)).body.map(row => row.status), ['검토 대기', '검토 대기']);
     const review = await call(app, 'GET', path, teacher);
+    assert.equal(review.body.evidence.mode, 'shared');
     assert.equal(review.body.evidence.excerpt, sharedTurn.body.reply);
+    assert.equal(review.body.evidence.question, sharedTurn.body.prompt);
     assert.ok(!JSON.stringify(review.body).includes('공유하지 않을 질문'));
 
     const suggested = await call(app, 'POST', path + '/suggest', teacher);
@@ -81,17 +97,23 @@ test('persists an assignment from scoped tutoring to oral evaluation', async () 
     assert.equal(suggested.body.questions[0].paragraph, 1);
     assert.ok(!JSON.stringify(sent.at(-1)).includes('공유하지 않을 질문'));
     assert.equal((await call(app, 'POST', path + '/suggest', teacher)).body.questions.length, 1);
-    const added = await call(app, 'POST', path + '/questions', teacher, { paragraph: 0, text: '직접 작성한 질문' });
-    assert.equal(added.body.questions.length, 2);
-    const { id, text } = added.body.questions[0];
-    assert.equal((await call(app, 'PUT', path + '/confirm', teacher, { questionId: id })).status, 200);
+    assert.equal((await call(app, 'PUT', path + '/question', teacher, { paragraph: 5, text: '없는 문단' })).status, 400);
+    const saved = await call(app, 'PUT', path + '/question', teacher, { paragraph: 0, text: '직접 작성한 질문' });
+    const id = saved.body.evaluation.questionId;
+    const text = saved.body.questions.find(item => item.id === id).text;
+    assert.equal(text, '직접 작성한 질문');
+    assert.equal((await call(app, 'GET', '/roster', teacher)).body[0].status, '질문 준비 완료');
     const score = { questionId: id, questionText: text, reason: 2, transfer: 1, memo: '근거를 설명함' };
     assert.equal((await call(app, 'PUT', path + '/evaluation', teacher, score)).body.evaluation.reason, 2);
 
     app.close();
     app = createApp({ database, model });
     assert.equal((await call(app, 'GET', path, teacher)).body.evaluation.memo, score.memo);
-    const edited = await call(app, 'PATCH', path + '/questions/' + id, teacher, { text: '변경된 구술 질문' });
+    assert.equal((await call(app, 'GET', '/roster', teacher)).body[0].status, '평가 완료');
+    const unchanged = await call(app, 'PUT', path + '/question', teacher, { paragraph: 0, text: '직접 작성한 질문' });
+    assert.equal(unchanged.body.evaluation.reason, 2);
+    const edited = await call(app, 'PUT', path + '/question', teacher, { paragraph: 1, text: '변경된 구술 질문' });
+    assert.equal(edited.body.evaluation.questionId, id);
     assert.equal(edited.body.evaluation.reason, null);
     assert.equal((await call(app, 'PUT', path + '/evaluation', teacher, score)).status, 409);
     assert.equal((await call(app, 'POST', '/logout', teacher)).status, 204);
@@ -162,7 +184,7 @@ test('protects the hosted instance and preserves accounts across backup and rest
     const studentCookie = student.headers.get('set-cookie');
     assert.equal((await hosted('POST', '/learning', { mode: 'hint', prompt: '힌트' }, studentCookie)).status, 200);
     assert.equal((await hosted('POST', '/learning', { mode: 'hint', prompt: '한도' }, studentCookie)).status, 429);
-    const submission = await hosted('POST', '/submission', { title: '보존할 과제', text: '근거 문단' }, studentCookie);
+    const submission = await hosted('POST', '/submission', { title: '보존할 과제', text: '근거 문단', report: { mode: 'none' } }, studentCookie);
     assert.equal(submission.status, 200);
     for (let i = 0; i < 8; i++) {
       assert.equal((await hosted('POST', '/login', { username: 'unknown', password })).status, 401);
@@ -173,16 +195,42 @@ test('protects the hosted instance and preserves accounts across backup and rest
     admin(database, ['backup', snapshot]);
     admin(restored, ['restore'], readFileSync(snapshot));
     admin(database, ['reset-password', 'instructor'], 'Updated-test-password-01');
-    assert.equal((await hosted('GET', '/submissions', null, session)).status, 401);
+    assert.equal((await hosted('GET', '/roster', null, session)).status, 401);
     app.close();
     app = createApp({ database: restored, origin });
-    assert.equal((await hosted('GET', '/submissions', null, session)).status, 401);
+    assert.equal((await hosted('GET', '/roster', null, session)).status, 401);
     const reauthenticated = await hosted('POST', '/login', credentials);
     assert.equal(reauthenticated.status, 200);
-    const submissions = await hosted('GET', '/submissions', null, reauthenticated.headers.get('set-cookie'));
-    assert.equal((await submissions.json())[0].title, '보존할 과제');
+    const roster = await hosted('GET', '/roster', null, reauthenticated.headers.get('set-cookie'));
+    assert.equal((await roster.json())[0].title, '보존할 과제');
   } finally {
     app?.close();
+    rmSync(folder, { recursive: true, force: true });
+  }
+});
+
+test('moves settings and evidence saved by the previous screens into the current format', async () => {
+  const { openStore, normalizeEvidence } = await import('./store.js');
+  const folder = mkdtempSync(join(tmpdir(), 'munyeon-legacy-'));
+  const database = join(folder, 'legacy.sqlite');
+  try {
+    const legacy = openStore(database);
+    legacy.run('UPDATE assignment SET config=? WHERE id=1', JSON.stringify({
+      title: '이전 과제', course: '이전 과목', goal: '목표', materials: '자료', help: '개념 설명', independent: '최종 해석', rubric: '기준',
+    }));
+    legacy.db.close();
+    const store = openStore(database);
+    const config = store.assignment();
+    assert.equal(config.title, '이전 과제');
+    assert.equal(config.prompt, '목표\n참고 자료: 자료');
+    assert.equal(config.allowed, '개념 설명');
+    assert.equal(config.restricted, '직접 할 부분: 최종 해석');
+    assert.equal(JSON.parse(store.get('SELECT config FROM assignment WHERE id=1').config).prompt, config.prompt);
+    store.db.close();
+    assert.deepEqual(normalizeEvidence(null), { mode: 'unreported' });
+    assert.equal(normalizeEvidence({ paragraph: 0, explanation: '설명', excerpt: '', source: '학생 자기보고' }).mode, 'manual');
+    assert.equal(normalizeEvidence({ paragraph: 1, explanation: '설명', excerpt: '답변', source: '문연 학습실' }).paragraph, 1);
+  } finally {
     rmSync(folder, { recursive: true, force: true });
   }
 });

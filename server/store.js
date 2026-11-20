@@ -3,13 +3,38 @@ import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypt
 
 export const modes = { concept: '개념 설명', hint: '힌트', feedback: '초안 피드백' };
 export const defaults = {
-  title: '대표값과 분포', course: '통계와 데이터',
-  goal: '표본 분포를 보고 적절한 대표값을 선택하고 그 이유를 설명한다.',
-  materials: '표본 데이터와 대표값 강의자료',
-  help: '개념 설명, 계산 확인, 해석 초안 피드백',
-  independent: '대표값 선택과 최종 해석은 학생이 직접 작성한다.',
+  title: '대표값과 분포', course: '통계와 데이터', section: '', due: '',
+  prompt: '표본 분포를 보고 적절한 대표값을 선택하고 그 이유를 설명하세요. 표본 데이터와 대표값 강의자료를 참고합니다.',
+  allowed: '개념 설명, 계산 확인, 해석 초안 피드백',
+  restricted: '대표값 선택과 최종 해석 대신 작성',
   rubric: '선택의 근거와 조건 변화의 영향을 각각 0~2점으로 평가한다.',
 };
+
+// 이전 버전의 과제 설정(goal·materials·help·independent)을 현재 항목으로 옮긴다.
+export function normalizeConfig(config = {}) {
+  if (typeof config.prompt === 'string') return { ...defaults, ...config };
+  const prompt = [config.goal, config.materials && '참고 자료: ' + config.materials].filter(Boolean).join('\n');
+  return {
+    ...defaults, title: config.title ?? defaults.title, course: config.course ?? defaults.course,
+    prompt: prompt || defaults.prompt, allowed: config.help ?? defaults.allowed,
+    restricted: config.independent ? '직접 할 부분: ' + config.independent : defaults.restricted,
+    rubric: config.rubric ?? defaults.rubric,
+  };
+}
+
+// 이전 버전의 근거 기록을 AI 활용 보고 형식으로 옮긴다.
+export function normalizeEvidence(evidence) {
+  if (!evidence) return { mode: 'unreported' };
+  if (evidence.mode) return evidence;
+  if (evidence.source === '문연 학습실') {
+    return { mode: 'shared', paragraph: evidence.paragraph, explanation: evidence.explanation, question: '', excerpt: evidence.excerpt };
+  }
+  return { mode: 'manual', explanation: evidence.explanation };
+}
+
+export function splitParagraphs(text) {
+  return text.trim().split(/\n[ \t]*\n+/).map(part => part.trim()).filter(Boolean);
+}
 export const demoAccounts = [
   { username: 'teacher', name: '김교수', role: 'teacher', password: 'munyeon-teacher' },
   { username: 'student', name: '이서윤', role: 'student', password: 'munyeon-student' },
@@ -51,6 +76,10 @@ export function openStore(filename, { demo = true, allowDemoAccounts = false } =
       reason INTEGER CHECK(reason BETWEEN 0 AND 2), transfer INTEGER CHECK(transfer BETWEEN 0 AND 2),
       memo TEXT NOT NULL DEFAULT ''
     );
+    CREATE TABLE IF NOT EXISTS drafts (
+      student_id INTEGER PRIMARY KEY REFERENCES users(id), title TEXT NOT NULL, body TEXT NOT NULL,
+      report TEXT NOT NULL, updated_at TEXT NOT NULL
+    );
     CREATE TABLE IF NOT EXISTS rate_limits (
       key TEXT PRIMARY KEY, count INTEGER NOT NULL, expires INTEGER NOT NULL
     );
@@ -73,6 +102,8 @@ export function openStore(filename, { demo = true, allowDemoAccounts = false } =
   try {
     transaction(() => {
       run('INSERT OR IGNORE INTO assignment VALUES (1, ?)', JSON.stringify(defaults));
+      const stored = JSON.parse(get('SELECT config FROM assignment WHERE id=1').config);
+      if (typeof stored.prompt !== 'string') run('UPDATE assignment SET config=? WHERE id=1', JSON.stringify(normalizeConfig(stored)));
       run('CREATE TABLE IF NOT EXISTS instance_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
       if (demo && !get("SELECT 1 FROM instance_settings WHERE key='production'")) {
         for (const account of demoAccounts) {
@@ -147,8 +178,8 @@ export function openStore(filename, { demo = true, allowDemoAccounts = false } =
     if (!row) return;
     return {
       id: row.id, name: row.name, title: row.title, createdAt: row.created_at,
-      paragraphs: JSON.parse(row.paragraphs), evidence: JSON.parse(row.evidence),
-      modes: JSON.parse(row.modes), config: JSON.parse(row.config),
+      paragraphs: JSON.parse(row.paragraphs), evidence: normalizeEvidence(JSON.parse(row.evidence)),
+      modes: JSON.parse(row.modes), config: normalizeConfig(JSON.parse(row.config)),
       questions: all('SELECT id,paragraph,text,source FROM questions WHERE submission_id=? ORDER BY id', id),
       evaluation: get('SELECT question_id AS questionId,reason,transfer,memo FROM evaluations WHERE submission_id=?', id) ?? null,
     };
@@ -156,6 +187,6 @@ export function openStore(filename, { demo = true, allowDemoAccounts = false } =
 
   return { db, get, all, run, transaction, signIn, userFor, submission, createAccount, resetPassword, takeLimit,
     signOut: token => token && run('DELETE FROM sessions WHERE token=?', digest(token)),
-    assignment: () => JSON.parse(get('SELECT config FROM assignment WHERE id=1').config),
+    assignment: () => normalizeConfig(JSON.parse(get('SELECT config FROM assignment WHERE id=1').config)),
   };
 }

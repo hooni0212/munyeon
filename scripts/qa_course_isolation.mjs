@@ -29,18 +29,17 @@ try {
   assert.equal(a.status, 200); assert.equal(b.status, 200); assert.equal(s.status, 200);
   assert.equal((await call('PUT', '/assignment', s.cookie, defaults)).status, 403);
   await call('PUT', '/assignment', a.cookie, { ...defaults, course: 'Synthetic course A' });
-  assert.equal((await call('POST', '/submission', s.cookie, { title: 'Course A example', text: 'Synthetic paragraph' })).status, 200);
-  const list = await call('GET', '/submissions', a.cookie);
+  assert.equal((await call('POST', '/submission', s.cookie, { title: 'Course A example', text: 'Synthetic paragraph', report: { mode: 'none' } })).status, 200);
+  const list = await call('GET', '/roster', a.cookie);
   const id = list.body[0].id;
-  let detail = (await call('POST', `/submissions/${id}/questions`, a.cookie, { paragraph: 0, text: 'Explain your reasoning.' })).body;
+  const detail = (await call('PUT', `/submissions/${id}/question`, a.cookie, { paragraph: 0, text: 'Explain your reasoning.' })).body;
   const q = detail.questions[0];
-  await call('PUT', `/submissions/${id}/confirm`, a.cookie, { questionId: q.id });
   const evaluated = await call('PUT', `/submissions/${id}/evaluation`, a.cookie, { questionId:q.id, questionText:q.text, reason:2, transfer:1, memo:'Synthetic QA' });
   assert.equal(evaluated.status, 200);
   await call('PUT', '/assignment', b.cookie, { ...defaults, course: 'Synthetic course B' });
   const viewA = await call('GET', '/assignment', a.cookie);
-  const viewB = await call('GET', '/submissions', b.cookie);
-  const second = await call('POST', '/submission', s.cookie, { title:'Course B example', text:'Synthetic second paragraph' });
+  const viewB = await call('GET', '/roster', b.cookie);
+  const second = await call('POST', '/submission', s.cookie, { title:'Course B example', text:'Synthetic second paragraph', report: { mode: 'none' } });
   console.log(JSON.stringify({
     source: 'Synthetic local fixture; not a Canvas teacher account',
     instructor_workflow: evaluated.status === 200,
