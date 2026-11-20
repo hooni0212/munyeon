@@ -8,6 +8,7 @@
 
 현재는 **단일 과제의 학습·제출·구술평가 흐름을 구현한 동적 웹 앱 MVP**입니다. React 화면, Node.js API, SQLite 영속 저장이 연결되어 있습니다. AI 제공자 연결 코드는 있지만, 실제 모델 품질과 외부 운영 배포는 별도로 검증해야 합니다. 현재 디자인은 재설계 전 검토 대상입니다.
 
+- [Canvas 학생 API QA와 교수자 테스트](docs/CANVAS_QA.md): 실제 조회 검증과 문연의 과목 분리 제한
 - [Canvas 연동 가능성](docs/CANVAS_INTEGRATION.md): 학생·교수자 진입점, 조회 범위와 학교 승인 조건
 - [무료 주소 서버 시안](docs/PREVIEW_DEPLOYMENT.md): 기존 홈서버에 별도 서비스로 운영하는 구성
 - [목표·범위·진행 현황](docs/PROJECT_STATUS.md): 구현한 기능, 검증 범위, 남은 작업과 단계별 완료 조건

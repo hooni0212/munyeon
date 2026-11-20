@@ -12,3 +12,7 @@ data/
 # Local design review captures and exports
 screenshots/
 .local-review/
+
+# Python QA caches
+__pycache__/
+*.pyc
