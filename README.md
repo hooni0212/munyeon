@@ -1,0 +1,124 @@
+# 문연
+
+교수자가 과제 지침을 설정하고, 학생이 해당 지침에 맞춰 AI 학습과 과제 제출을 진행하는 로컬 웹 앱입니다. 교수자는 제출물과 학생이 공유한 사례를 바탕으로 질문을 준비하고 구술평가 결과를 저장할 수 있습니다.
+
+## 프로젝트 현황
+
+현재는 **단일 과제의 학습·제출·구술평가 흐름을 구현한 동적 웹 앱 MVP**입니다. React 화면, Node.js API, SQLite 영속 저장이 연결되어 있습니다. AI 제공자 연결 코드는 있지만, 실제 모델 품질과 외부 운영 배포는 별도로 검증해야 합니다. 현재 디자인은 재설계 전 검토 대상입니다.
+
+- [목표·범위·진행 현황](docs/PROJECT_STATUS.md): 구현한 기능, 검증 범위, 남은 작업과 단계별 완료 조건
+- [동적 서버 운영 전환 안내](docs/DYNAMIC_SERVER.md): 현재 서버 구조, 배포 순서와 확장 시 필요한 변경
+
+화면 캡처, 로컬 데이터베이스, 실제 환경 설정과 의존성 폴더는 저장소에 포함하지 않습니다.
+
+## 실행
+
+Node.js 24 이상이 필요합니다. 이 폴더에서 아래 명령을 실행합니다.
+
+```sh
+npm ci
+npm run build
+npm start
+```
+
+브라우저에서 [http://127.0.0.1:4311](http://127.0.0.1:4311)을 엽니다. 서버는 이 컴퓨터의 루프백 주소에서 실행되며, 첫 시작 시 `data/munyeon.sqlite`에 데이터베이스를 생성합니다. 앱을 재시작해도 제출물과 평가 기록은 유지됩니다.
+
+| 역할 | 아이디 | 비밀번호 |
+| --- | --- | --- |
+| 교수자 | teacher | munyeon-teacher |
+| 학생 | student | munyeon-student |
+| 학생 2 | student2 | munyeon-student2 |
+
+이 계정은 로컬 체험용입니다. 학생마다 한 과제에 한 번 제출할 수 있습니다. 두 번째 학생 계정으로 별도 제출 흐름을 확인할 수 있습니다.
+
+개발 중에는 별도 터미널에서 `npm run api`와 `npm run dev`를 실행합니다. Vite 개발 서버는 API를 4311 포트로 전달합니다.
+
+## AI 모델 연결
+
+`.env.example`을 `.env`로 복사하고 `MUNYEON_AI_URL`과 `MUNYEON_AI_MODEL`을 설정합니다. 원격 제공자가 키를 요구하면 `MUNYEON_AI_KEY`를 추가하고 서버를 재시작합니다.
+
+- URL에는 `/chat/completions` 앞의 기본 주소를 입력합니다. 로컬 Ollama 예시는 `http://127.0.0.1:11434/v1`입니다. [Ollama API 문서](https://docs.ollama.com/api/openai-compatibility)
+- 추천 질문은 Chat Completions의 JSON 응답 형식을 지원하는 모델을 사용합니다. [OpenAI API 문서](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)
+- 학생이 학습실에서 질문을 보내면 교수자 지침, 최근 학습 대화, 새 질문이 설정된 모델 서버에 전달됩니다. 교수자가 질문 추천을 요청하면 제출물, 평가 기준, 공유된 발췌가 전달됩니다.
+- 모델을 설정하지 않은 상태에서도 교수자 설정, 학생 제출, 직접 작성한 질문의 확정, 구술평가를 실행할 수 있습니다.
+
+## 확인 순서
+
+1. 교수자로 로그인해 **과제 설정**에서 지침을 저장합니다.
+2. 학생으로 로그인해 **AI 학습실**에서 지침을 확인합니다. 모델을 연결했다면 대화하고, 답변 한 건을 선택해 과제 본문과 연결할 수 있습니다.
+3. **과제 제출**에서 제목과 본문을 저장합니다.
+4. 교수자의 **제출물 검토**에서 문단을 선택하고, 질문을 직접 작성하거나 모델에서 추천받습니다.
+5. 문항을 확정하고 **구술평가**에서 두 항목의 점수와 메모를 저장합니다.
+
+교수자는 학생의 과제별 AI 활동 유형과 학생이 공유한 답변만 확인합니다. LMS 로그인·명단·성적 연동은 학교의 외부 도구 등록과 연동 방식 확인이 필요한 다음 단계입니다.
+
+## 코드 구조
+
+| 경로 | 내용 |
+| --- | --- |
+| `src/` | React 화면과 흑백 스타일 |
+| `server/index.js` | 로컬 HTTP 서버와 정적 파일 제공 |
+| `server/app.js` | 역할별 접근 제어와 과제·대화·제출·평가 API |
+| `server/store.js` | SQLite 저장과 로그인 세션 |
+| `server/model.js` | 서버의 모델 연결, 추천 질문 검증 |
+
+`npm test`는 임시 SQLite와 모의 모델 응답을 사용해 접근 권한, 선택적 공유, 질문 검증, 채점, 데이터 재시작 보존을 확인합니다.
+
+## 소규모 운영 배포
+
+문연의 현재 구조는 단일 인스턴스에서 한 과제에 참여하는 수업용입니다. 공개 가입은 없으며 운영자가 교수자와 학생 계정을 발급합니다. SQLite는 앱의 영속 볼륨에 저장합니다. 운영 시에는 한 데이터베이스를 하나의 앱 컨테이너에서 사용합니다.
+
+### 첫 배포
+
+1. Docker Engine과 Compose가 설치된 서버에 프로젝트를 복사합니다. 서비스 도메인의 DNS를 서버로 연결하고, 80·443 포트를 Caddy에 연결합니다. [Caddy HTTPS 문서](https://caddyserver.com/docs/automatic-https)
+2. `.env.example`을 `.env`로 복사해 `MUNYEON_DOMAIN`을 지정합니다. 앱은 Caddy 뒤에서 실행되며 앱 포트를 호스트에 공개하지 않습니다. 이미 서버에서 80·443 포트를 사용하는 경우에는 기존 HTTPS 프록시에 문연 도메인을 추가해야 합니다.
+3. 운영 계정을 생성한 다음 서비스를 시작합니다. 비밀번호는 16자 이상으로 정하고, 아래 Bash 예시에서는 입력값을 화면에 표시하거나 명령 인자로 넘기지 않습니다.
+
+```bash
+chmod 600 .env
+docker compose build app
+
+read -r -s -p '교수자 초기 비밀번호: ' munyeon_password; printf '\n'
+printf '%s\n' "$munyeon_password" |
+  docker compose run --rm -T app node server/admin.js create-user instructor teacher '담당 교수자'
+unset munyeon_password
+
+read -r -s -p '학생 초기 비밀번호: ' munyeon_password; printf '\n'
+printf '%s\n' "$munyeon_password" |
+  docker compose run --rm -T app node server/admin.js create-user learner01 student '학생 이름'
+unset munyeon_password
+
+docker compose up -d --wait
+docker compose ps
+```
+
+학생마다 별도 아이디를 발급합니다. 초기 비밀번호를 바꾸려면 같은 표준입력 방식으로 `node server/admin.js reset-password <아이디>`를 실행합니다. 비밀번호 교체 시 해당 사용자의 기존 세션이 종료됩니다. 개발용 DB를 재사용하려면 기존 체험 계정의 알려진 비밀번호를 모두 교체해야 운영 모드에서 시작할 수 있습니다.
+
+배포 후 `https://설정한-도메인/healthz`와 로그인 화면을 확인합니다. 학생 계정으로 예시 과제를 제출한 뒤 교수자 계정으로 검토하고 구술평가를 저장합니다. 새 호스트에서 운영을 시작하기 전에 실제 모델을 연결하고 질문 응답과 구술 문항 추천도 확인합니다.
+
+### 운영 모델
+
+`.env`의 `MUNYEON_AI_URL`은 **앱 컨테이너에서 접근할 수 있는 주소**로 지정합니다. 컨테이너의 `127.0.0.1`은 앱 컨테이너 자체입니다. 모델 이름과 제공자 키를 설정한 후 `docker compose up -d --wait`로 변경을 적용합니다.
+
+계정별 모델 호출 한도는 한 시간에 20회, 전체 기본값은 24시간에 120회입니다. 전체 한도는 `MUNYEON_AI_DAILY_LIMIT`에서 바꿀 수 있습니다. 요청당 응답 한도는 1,600토큰입니다. 모델 게이트웨이가 다른 필드명을 요구하면 `MUNYEON_AI_OUTPUT_LIMIT_FIELD`에 `max_tokens` 또는 `max_completion_tokens`를 지정합니다. 학생 데이터에 접근할 운영자와 데이터 보존 범위, 모델 제공자에게 전송되는 항목은 수업 운영 전에 안내합니다.
+
+### 백업과 복구
+
+SQLite 온라인 백업을 사용합니다. 백업 파일에는 계정 해시와 과제 데이터가 들어 있으므로 운영자만 접근할 수 있는 위치에 보관합니다. [Node.js SQLite 백업 문서](https://nodejs.org/download/release/latest-v24.x/docs/api/sqlite.html)
+
+```bash
+snapshot="munyeon-$(date +%Y%m%d-%H%M%S).sqlite"
+docker compose exec -T app node server/admin.js backup "/tmp/$snapshot"
+docker compose cp "app:/tmp/$snapshot" "./$snapshot"
+chmod 600 "$snapshot"
+docker compose exec -T app rm "/tmp/$snapshot"
+```
+
+복구는 **새 DB 파일**에 진행합니다. 이전 파일은 되돌릴 때 사용할 수 있습니다. `snapshot`은 위에서 내려받은 파일 경로로 지정합니다.
+
+```bash
+restored="restored-$(date +%Y%m%d-%H%M%S).sqlite"
+MUNYEON_DB_FILENAME="$restored" docker compose run --rm -T app node server/admin.js restore < "$snapshot"
+```
+
+복구가 완료되면 `.env`에 `MUNYEON_DB_FILENAME`을 위 `restored` 파일명으로 지정하고 `docker compose up -d --wait`를 실행합니다. 복구된 계정으로 다시 로그인해 제출물과 평가 기록을 확인합니다. 백업 시점의 세션은 복원 시 만료됩니다.

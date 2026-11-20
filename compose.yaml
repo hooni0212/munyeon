@@ -1,0 +1,43 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: '4311'
+      MUNYEON_HOST: 0.0.0.0
+      MUNYEON_DB: /app/data/${MUNYEON_DB_FILENAME:-munyeon.sqlite}
+      MUNYEON_ORIGIN: https://${MUNYEON_DOMAIN:?Set MUNYEON_DOMAIN in .env}
+      MUNYEON_TRUST_PROXY: '1'
+      MUNYEON_AI_URL: ${MUNYEON_AI_URL:-}
+      MUNYEON_AI_MODEL: ${MUNYEON_AI_MODEL:-}
+      MUNYEON_AI_KEY: ${MUNYEON_AI_KEY:-}
+      MUNYEON_AI_DAILY_LIMIT: ${MUNYEON_AI_DAILY_LIMIT:-120}
+      MUNYEON_AI_OUTPUT_LIMIT_FIELD: ${MUNYEON_AI_OUTPUT_LIMIT_FIELD:-}
+    volumes:
+      - app_data:/app/data
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4311/healthz').then(r => { if (!r.ok) process.exitCode=1 }).catch(() => { process.exitCode=1 })"]
+      interval: 15s
+      timeout: 4s
+      retries: 4
+    stop_grace_period: 55s
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      MUNYEON_DOMAIN: ${MUNYEON_DOMAIN:?Set MUNYEON_DOMAIN in .env}
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+volumes:
+  app_data:
+  caddy_data:
+  caddy_config:
