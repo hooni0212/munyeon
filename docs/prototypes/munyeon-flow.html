@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문연 · 과제 워크스페이스 시안</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #192c23;
+    --muted: #53665b;
+    --forest: #173c2c;
+    --green: #225c41;
+    --hover: #174a32;
+    --paper: #f8f8f3;
+    --white: #fff;
+    --sage: #e9f1e6;
+    --line: #dbe2d9;
+    --outline: #87998a;
+    --amber: #f7efd9;
+    --brown: #674c17;
+    --radius: 16px;
+    --shadow: 0 2px 3px #173c2c08;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; word-break: keep-all; overflow-wrap: anywhere; }
+  h1, h2, h3, p, ul, ol, dl { margin: 0; }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.18; letter-spacing: -.055em; text-wrap: balance; }
+  h2 { font-size: 21px; line-height: 1.35; letter-spacing: -.035em; }
+  h3 { font-size: 16px; line-height: 1.5; }
+  a { color: inherit; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid #10795e; outline-offset: 4px; }
+  .skip { position: absolute; z-index: 3; left: 12px; top: 8px; padding: 8px 14px; background: white; transform: translateY(-160%); }
+  .skip:focus { transform: none; }
+  .masthead { background: var(--forest); color: white; }
+  .masthead-inner { max-width: 1248px; min-height: 76px; margin: auto; padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+  .mark { display: grid; place-items: center; width: 37px; height: 37px; border: 1px solid #ffffff35; background: #24543e; border-radius: 10px; font: 20px/1 'Apple SD Gothic Neo', sans-serif; }
+  .brand strong { display: block; font-size: 23px; line-height: 1.1; letter-spacing: -.05em; }
+  .brand small { display: block; margin-top: 3px; color: #d5e5d9; font-size: 12px; }
+  .demo { display: flex; align-items: center; gap: 12px; }
+  .demo > span { color: #d5e5d9; font-size: 13px; }
+  .switch { display: flex; padding: 3px; gap: 2px; border: 1px solid #ffffff50; border-radius: 9px; }
+  .switch a { display: grid; min-height: 38px; align-items: center; padding: 0 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 700; }
+  .switch a[aria-current] { color: var(--forest); background: #eff5ed; }
+  .switch a:focus-visible, .brand:focus-visible { outline-color: #b3efc7; }
+  .navigation { background: var(--white); border-bottom: 1px solid var(--line); }
+  .navigation-inner { max-width: 1248px; min-height: 52px; margin: auto; display: flex; align-items: stretch; gap: 28px; padding: 0 32px; }
+  .navigation a { display: flex; align-items: center; padding: 0 4px; border-bottom: 2px solid transparent; text-decoration: none; font-size: 14px; color: var(--muted); }
+  .navigation a[aria-current] { border-bottom-color: var(--green); color: var(--green); font-weight: 750; }
+  main { width: min(100% - 64px, 780px); min-height: calc(100vh - 205px); margin: 0 auto; padding: 38px 0 58px; }
+  main.wide { width: min(100% - 64px, 980px); }
+  .trail { display: inline-flex; align-items: center; min-height: 38px; margin: -7px 0 17px; text-decoration: none; color: var(--green); font-weight: 650; font-size: 14px; }
+  .trail:hover, .text-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .intro { margin-bottom: 27px; }
+  .context { color: var(--green); font-size: 14px; font-weight: 750; margin-bottom: 7px; }
+  .subtitle { color: var(--muted); margin-top: 9px; }
+  .stack { display: grid; gap: 14px; }
+  .stack.roomy { gap: 20px; }
+  .card { padding: 23px 25px; border: 1px solid var(--line); background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card h2 + p, .card h3 + p { margin-top: 6px; }
+  .card.tint { background: var(--sage); border-color: #d4e4d1; }
+  .card > :is(h2, h3) + dl { margin-top: 10px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .row.start { align-items: start; }
+  .tags { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+  .pill { display: inline-flex; align-items: center; flex: none; width: fit-content; padding: 3px 9px; border-radius: 6px; background: var(--sage); color: #235139; font-size: 13px; font-weight: 720; }
+  .pill.neutral { color: #485c50; background: #eff2ed; }
+  .pill.amber { color: var(--brown); background: var(--amber); }
+  .actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; }
+  .actions.end { justify-content: flex-end; }
+  .button { display: inline-flex; min-height: 46px; justify-content: center; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid transparent; border-radius: 9px; text-decoration: none; background: var(--green); color: white; font-size: 15px; font-weight: 730; line-height: 1.4; text-align: center; }
+  .button:hover { background: var(--hover); }
+  .button.secondary { background: var(--white); border-color: var(--outline); color: var(--green); }
+  .button.secondary:hover { background: var(--sage); }
+  .button.compact { min-height: 42px; padding: 8px 13px; font-size: 14px; }
+  .text-link { color: var(--green); font-size: 14px; font-weight: 700; text-underline-offset: 3px; }
+  button.text-link { border: 0; background: transparent; padding: 8px 0; text-align: left; }
+  .details > div { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; padding: 9px 0; }
+  .details > div + div { border-top: 1px solid var(--line); }
+  .details dt { color: var(--muted); font-size: 14px; font-weight: 700; }
+  .details dd { margin: 0; white-space: pre-line; }
+  .assignment-list { list-style: none; padding: 0; }
+  .assignment-list .card h2 { margin-bottom: 5px; }
+  .assignment-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: -10px 0 21px; color: var(--muted); font-size: 14px; }
+  .rule-list { list-style: none; padding: 0; margin-top: 10px; }
+  .rule-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; padding: 7px 0; }
+  .steps { list-style: none; display: flex; flex-wrap: wrap; gap: 7px 14px; align-items: center; margin: 0 0 18px; padding: 0; }
+  .steps li { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .steps li + li::before { content: '/'; color: #63776a; margin-right: 7px; }
+  .steps li[aria-current] { color: var(--green); font-weight: 760; }
+  .steps b { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; border: 1px solid #819588; line-height: 1; }
+  .steps li[aria-current] b { border-color: var(--green); background: var(--green); color: white; }
+  .fields { display: grid; gap: 16px; }
+  .fields label, .field { display: grid; gap: 6px; font-size: 14px; font-weight: 720; }
+  input:not([type=radio], [type=checkbox], [type=file]), textarea, select { width: 100%; padding: 9px 12px; min-height: 45px; background: white; border: 1px solid var(--outline); border-radius: 8px; line-height: 1.5; font-size: 16px; font-weight: 450; }
+  textarea { min-height: 100px; resize: vertical; }
+  input[type=checkbox], input[type=radio] { accent-color: var(--green); width: 18px; height: 18px; margin: 0; flex: none; }
+  .hint { font-size: 13px; color: var(--muted); font-weight: 450; }
+  .choice { display: flex; align-items: center; gap: 9px; min-height: 44px; }
+  fieldset { padding: 0; border: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; font-weight: 750; }
+  .save-feedback { color: var(--green); font-size: 14px; font-weight: 650; }
+  .notice { padding: 11px 15px; border: 1px solid #d5e2d4; background: var(--sage); border-radius: 9px; font-size: 14px; }
+  .notice.warn { color: var(--brown); background: var(--amber); border-color: #eadbb2; }
+  .notice[hidden] { display: none; }
+  .receipt { padding: 29px 29px 25px; }
+  .check { display: grid; width: 44px; height: 44px; place-items: center; margin-bottom: 11px; border-radius: 50%; background: var(--sage); color: var(--green); font-size: 25px; font-weight: 750; }
+  .plain-text { white-space: pre-wrap; }
+  .excerpt { margin-top: 6px; border-left: 3px solid #86a78f; padding-left: 12px; white-space: pre-wrap; }
+  .material { border-top: 1px solid var(--line); padding-top: 13px; margin-top: 14px; }
+  .disclosure summary { cursor: pointer; color: var(--green); font-weight: 700; }
+  .disclosure[open] summary { margin-bottom: 9px; }
+  .conversation { list-style: none; padding: 0; }
+  .conversation li { max-width: 88%; }
+  .conversation li:nth-child(odd) { justify-self: end; background: var(--sage); }
+  .composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
+  .filters { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: end; }
+  .roster { list-style: none; margin: 14px 0 0; padding: 0; }
+  .roster li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(136px, .58fr) auto; gap: 12px; align-items: center; padding: 13px 2px; border-top: 1px solid var(--line); }
+  .roster li:first-child { border-top: 0; }
+  .work-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: -5px 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .work-tabs a { display: inline-flex; align-items: center; min-height: 42px; padding: 7px 12px; color: var(--muted); border: 1px solid transparent; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; }
+  .work-tabs a:hover { background: #eff2ed; }
+  .work-tabs a[aria-current] { color: var(--green); background: var(--sage); border-color: #cbdccb; }
+  .paragraph-list { display: grid; gap: 13px; list-style: none; padding: 0; }
+  .paragraph-list li + li { padding-top: 13px; border-top: 1px solid var(--line); }
+  .paragraph-list p { margin: 4px 0 6px; }
+  .scores { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 5px; }
+  .scores label { display: flex; align-items: center; gap: 6px; min-height: 43px; padding: 6px 11px; border: 1px solid var(--outline); border-radius: 8px; }
+  footer { width: min(100% - 64px, 980px); display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 0 auto; padding: 14px 0 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  @media (max-width: 600px) {
+    .masthead-inner { min-height: 68px; padding: 10px 16px; }
+    .brand small, .demo > span { display: none; }
+    .navigation-inner { gap: 16px; padding: 0 16px; }
+    main, main.wide, footer { width: calc(100% - 32px); }
+    main { padding: 26px 0 38px; }
+    .card, .receipt { padding: 18px; }
+    .row.adapt { align-items: start; flex-direction: column; }
+    .details > div { grid-template-columns: 90px minmax(0, 1fr); gap: 8px; }
+    .roster li { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; }
+    .roster li > :nth-child(2) { grid-row: 2; }
+    .roster li > :nth-child(3) { grid-area: 1 / 2 / 3 / 3; }
+    .conversation li { max-width: 96%; }
+  }
+  @media (max-width: 380px) {
+    .filters, .composer { grid-template-columns: 1fr; }
+    .work-tabs { gap: 4px; }
+    .work-tabs a { padding-inline: 7px; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#workspace" data-skip>본문으로 건너뛰기</a>
+<header class="masthead" id="masthead"></header>
+<nav class="navigation" id="navigation" aria-label="주 메뉴"></nav>
+<main id="workspace" tabindex="-1"></main>
+<footer><span>문연 시안 · 예시 데이터</span><button class="text-link" type="button" data-action="reset">시안 초기화</button></footer>
+<script>
+'use strict';
+
+const storageKey = 'munyeon-flow-prototype-20261120-v1';
+const sampleBody = '학생들은 AI를 과제의 어느 단계까지 활용할 수 있는지 판단하기 어렵다.\n\n과제를 아이디어 구상, 초안 작성, 최종 제출 단계로 나누고, 각 단계에서 허용되는 활용과 직접 수행할 일을 함께 안내한다.\n\n두 가지 안내 형식을 보여주고 학생이 필요한 기준을 찾는 데 걸리는 시간을 비교한다.';
+const sampleQuestion = '과제 단계별로 기준을 제시하면 어떤 점이 더 명확해질까요?';
+const sampleReply = '아이디어 구상, 초안 작성, 최종 제출로 나누고 각 단계에서 허용되는 활용을 한 줄로 적어보세요.';
+const sampleExplanation = '단계 구분은 참고했고, 각 단계의 구체적인 기준은 직접 수정해 작성했습니다.';
+const seeded = {
+  assignment: { course: '창의융합적디자인', section: '01분반', title: '디자인 문제 해결 보고서', due: '2026-11-24T23:59', prompt: '교내 학습 환경에서 겪는 문제를 관찰하고, 근거와 함께 해결안을 제안하세요.', allowed: '아이디어 구상, 초안 피드백', restricted: '제출문 대필, 인터뷰 근거 생성' },
+  draft: { title: '과제별 AI 활용 기준을 한눈에', body: sampleBody, file: '' },
+  report: { mode: '', paragraph: 1, explanation: sampleExplanation, manualExplanation: '', exchange: 0, connectionChecked: false },
+  chat: [{ question: '과제 공지에서 AI 활용 기준을 어떻게 보여줄까?', reply: sampleReply }],
+  submitted: null,
+  reviews: {},
+};
+const exampleSubmission = { id: 'sample', name: '박서준', title: '과제별 AI 활용 기준을 한눈에', body: sampleBody, file: '', assignmentTitle: seeded.assignment.title, report: { ...seeded.report, ...seeded.chat[0], mode: 'shared' }, time: '2026-11-19T09:42:00.000Z' };
+
+let state = freshState();
+let filter = { status: 'all', query: '' };
+let policyDraft = null;
+let current = null;
+let notice = '';
+let canStore = true;
+try {
+  const saved = localStorage.getItem(storageKey);
+  if (saved) state = JSON.parse(saved);
+} catch { canStore = false; }
+
+const workspace = document.getElementById('workspace');
+const masthead = document.getElementById('masthead');
+const navigation = document.getElementById('navigation');
+
+function freshState() { return JSON.parse(JSON.stringify(seeded)); }
+function save() {
+  try { localStorage.setItem(storageKey, JSON.stringify(state)); canStore = true; }
+  catch { canStore = false; }
+}
+function esc(value = '') {
+  const escapes = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return String(value ?? '').replace(/[&<>"']/g, character => escapes[character]);
+}
+function href(key, student = null) { return '#' + key + (student ? '/' + student : ''); }
+function go(key, student = null) {
+  const next = href(key, student);
+  if (location.hash === next) render();
+  else location.hash = next;
+}
+function link(key, label, { student = null, secondary = false, compact = false } = {}) {
+  return `<a class="button${secondary ? ' secondary' : ''}${compact ? ' compact' : ''}" href="${href(key, student)}">${esc(label)}</a>`;
+}
+function button(label, { secondary = false, action = '', compact = false } = {}) {
+  return `<button class="button${secondary ? ' secondary' : ''}${compact ? ' compact' : ''}" type="${action ? 'button' : 'submit'}"${action ? ` data-action="${action}"` : ''}>${esc(label)}</button>`;
+}
+function back(key, label, student = null) { return `<a class="trail" href="${href(key, student)}">← ${esc(label)}</a>`; }
+function intro(title, subtitle = '', context = '') {
+  return `<header class="intro">${context ? `<p class="context">${esc(context)}</p>` : ''}<h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ''}</header>`;
+}
+function pill(label, tone = '') { return `<span class="pill${tone ? ' ' + tone : ''}">${esc(label)}</span>`; }
+function details(entries) {
+  return `<dl class="details">${entries.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`;
+}
+function studentContext() { return `${state.assignment.course} · ${state.assignment.title}`; }
+function rules() {
+  return `<ul class="rule-list"><li>${pill('허용')}<span>${esc(state.assignment.allowed || '지정된 활용 없음')}</span></li><li>${pill('제한', 'amber')}<span>${esc(state.assignment.restricted || '별도 제한 없음')}</span></li></ul>`;
+}
+function step(number) {
+  return `<ol class="steps" aria-label="과제 제출 단계">${['과제 작성', 'AI 활용 확인', '제출 확인'].map((label, index) => `<li${index + 1 === number ? ' aria-current="step"' : ''}><b aria-hidden="true">${index + 1}</b>${label}</li>`).join('')}</ol>`;
+}
+function when(value) {
+  if (!value) return '미정';
+  const date = new Date(value);
+  const time = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  return time.format(typeof value === 'string' && value.length === 16 ? new Date(value + '+09:00') : date);
+}
+function paragraphs(body) { return body.trim().split(/\n[ \t]*\n+/).map(text => text.trim()).filter(Boolean); }
+function selectedParagraph(body, index) { return paragraphs(body)[index] || paragraphs(body)[0] || ''; }
+function savedLabel() { return canStore ? '이 브라우저에 초안 저장' : '브라우저 저장을 사용할 수 없어요.'; }
+
+function studentHome() {
+  const { assignment, submitted } = state;
+  return intro('내 과제', '', assignment.course) + `<ul class="assignment-list"><li class="card row adapt"><div class="stack" style="gap:7px"><div class="tags">${pill(submitted ? '제출 완료' : '작성 중', submitted ? '' : 'neutral')}</div><h2>${esc(assignment.title)}</h2><p class="muted small">마감 ${esc(when(assignment.due))}</p></div>${link(submitted ? 's-receipt' : 's-assignment', submitted ? '제출 내역 보기' : '과제 열기')}</li></ul>`;
+}
+
+function assignmentView() {
+  const { assignment, submitted } = state;
+  return back('s-home', '내 과제') + intro(assignment.title, '', assignment.course) + `<div class="assignment-meta"><span>마감 ${esc(when(assignment.due))}</span>${pill(submitted ? '제출 완료' : '작성 중', submitted ? '' : 'neutral')}</div><div class="stack">
+    <section class="card"><h2>과제 안내</h2><p>${esc(assignment.prompt)}</p></section>
+    <section class="card tint"><h2>이 과제의 AI 활용 기준</h2>${rules()}<div class="material"><a class="text-link" href="#s-chat">AI 대화 열기</a></div></section>
+    </div><div class="actions end">${link(submitted ? 's-receipt' : 's-write', submitted ? '제출 내역 보기' : '과제 이어서 작성')}</div>`;
+}
+
+function studentChat() {
+  const exchanges = state.chat.map((entry, index) => `<li class="card"><h3>내 질문</h3><p>${esc(entry.question)}</p></li><li class="card"><h3>과제 AI · 예시 응답</h3><p>${esc(entry.reply)}</p>${state.submitted ? '' : `<button type="button" class="text-link" data-action="select-exchange" data-index="${index}">이 답변을 활용 사례로 선택</button>`}</li>`).join('');
+  return back('s-assignment', '과제 안내') + intro('과제 AI 대화', '', studentContext()) + `<div class="stack roomy">
+    <details class="card disclosure" open><summary>이 과제의 AI 활용 기준</summary>${rules()}<p class="muted small">제출 확인 단계에서 교수자에게 공유되는 발췌를 볼 수 있어요.</p></details>
+    <ol class="conversation stack">${exchanges}</ol>
+    ${state.submitted ? '<p class="notice">제출한 과제의 대화는 열람만 할 수 있어요.</p>' : `<form class="composer" data-form="chat"><input aria-label="질문" name="question" placeholder="질문을 입력하세요" maxlength="400" required>${button('예시 답변 보기')}</form>`}
+    </div>`;
+}
+
+function studentWrite() {
+  const draft = state.draft;
+  return back('s-assignment', '과제 안내') + step(1) + intro('과제 작성', '', studentContext()) + `<form data-form="write">
+    <section class="card fields">
+      <label>제출물 제목<input name="title" value="${esc(draft.title)}" required maxlength="160"></label>
+      <label>본문<textarea name="body" rows="8" required maxlength="16000" placeholder="문단 사이에 빈 줄을 넣어 주세요.">${esc(draft.body)}</textarea></label>
+      <details class="disclosure"><summary>텍스트 파일 불러오기</summary><p class="hint">UTF-8 .txt 파일을 불러오면 본문에 입력돼요. 파일은 이 브라우저에서 읽어요.</p><input type="file" id="draft-file" aria-label="텍스트 파일" accept=".txt,text/plain"><p id="file-status" class="hint" role="status">${esc(draft.file)}</p></details>
+    </section><div class="actions"><span class="save-feedback" id="draft-status" role="status">${esc(savedLabel())}</span>${button('AI 활용 확인으로')}</div></form>`;
+}
+
+function studentReport() {
+  const mode = state.report.mode;
+  const selected = state.chat[state.report.exchange];
+  return back('s-write', '과제 작성') + step(2) + intro('AI 활용 확인', '이 과제에서 AI 도움을 어떻게 활용했는지 선택하세요.', studentContext()) + `<form data-form="report">
+    <section class="card stack"><fieldset><legend>활용 방식</legend>
+      <label class="choice"><input type="radio" name="mode" value="shared" required ${mode === 'shared' ? 'checked' : ''}> 문연 대화 사례 연결</label>
+      <label class="choice"><input type="radio" name="mode" value="manual" ${mode === 'manual' ? 'checked' : ''}> 활용 내용 직접 입력</label>
+      <label class="choice"><input type="radio" name="mode" value="none" ${mode === 'none' ? 'checked' : ''}> AI를 사용하지 않음</label>
+    </fieldset>
+    ${mode === 'shared' ? `<div class="material"><h3>선택한 대화</h3><p class="muted">${esc(selected?.question || '연결된 대화가 없습니다.')}</p><a class="text-link" href="#s-evidence">대화와 연결할 문단 ${state.report.connectionChecked ? '수정' : '확인'}</a></div>` : ''}
+    ${mode === 'manual' ? `<div class="fields"><label>내가 받은 도움과 직접 한 판단<textarea name="explanation" rows="4" maxlength="1500" required placeholder="예: 아이디어를 정리할 때 사용했고, 최종 기준은 직접 선택했습니다.">${esc(state.report.manualExplanation)}</textarea></label></div>` : ''}
+    </section><div class="actions end">${button(mode === 'shared' && !state.report.connectionChecked ? '활용 사례 연결로' : '제출 확인으로')}</div></form>`;
+}
+
+function studentEvidence() {
+  return back('s-report', 'AI 활용 확인') + intro('활용 사례 연결', '대화 한 건을 과제의 관련 문단에 연결하세요.', studentContext()) + `<form data-form="evidence">
+    <section class="card fields">
+      <label>공유할 대화<select name="exchange">${state.chat.map((entry, index) => `<option value="${index}"${index === state.report.exchange ? ' selected' : ''}>${esc(entry.question)}</option>`).join('')}</select></label>
+      <div id="exchange-preview" class="notice">${esc(state.chat[state.report.exchange]?.reply)}</div>
+      <label>연결할 문단<select name="paragraph">${paragraphs(state.draft.body).map((paragraph, index) => `<option value="${index}"${index === state.report.paragraph ? ' selected' : ''}>문단 ${index + 1} · ${esc(paragraph.slice(0, 38))}</option>`).join('')}</select></label>
+      <label>나의 활용 설명<textarea name="explanation" rows="3" maxlength="1500" required>${esc(state.report.explanation)}</textarea></label>
+    </section><div class="actions end">${button('연결 저장 후 제출 확인')}</div></form>`;
+}
+
+function reportSummary(report) {
+  if (report.mode === 'none') return '<p>AI를 사용하지 않음 · 학생 확인</p>';
+  if (report.mode === 'manual') return `<p class="plain-text">${esc(report.explanation)}</p>`;
+  return `<p>문단 ${report.paragraph + 1}에 연결한 대화 1건</p><dl class="details"><div><dt>학생 질문</dt><dd>${esc(report.question)}</dd></div><div><dt>AI 답변</dt><dd>${esc(report.reply)}</dd></div><div><dt>활용 설명</dt><dd>${esc(report.explanation)}</dd></div></dl>`;
+}
+
+function currentReport() {
+  const { mode, paragraph, explanation, exchange } = state.report;
+  if (mode === 'shared') return { mode, paragraph, explanation, ...state.chat[exchange] };
+  if (mode === 'manual') return { mode, explanation: state.report.manualExplanation };
+  return { mode: 'none' };
+}
+
+function studentConfirm() {
+  return back('s-report', 'AI 활용 확인') + step(3) + intro('제출 내용 확인', '아래 과제와 AI 활용 확인 내용이 교수자에게 전달됩니다.', studentContext()) + `<form data-form="submit">
+    <div class="stack"><section class="card"><div class="row adapt"><h2>과제 본문</h2><a class="text-link" href="#s-write">과제 수정</a></div><p><strong>${esc(state.draft.title)}</strong></p><details class="disclosure material"><summary>본문 미리 보기</summary><p class="plain-text">${esc(state.draft.body)}</p></details></section>
+    <section class="card"><div class="row adapt"><h2>교수자에게 전달되는 AI 활용 내용</h2><a class="text-link" href="#s-report">활용 내용 수정</a></div>${reportSummary(currentReport())}</section>
+    <p class="notice warn">제출 후에는 내용을 수정할 수 없어요.</p></div><div class="actions end">${button('과제 최종 제출')}</div></form>`;
+}
+
+function studentReceipt() {
+  const submission = state.submitted;
+  return back('s-home', '내 과제') + intro('제출 완료', '', `${state.assignment.course} · ${submission.assignmentTitle}`) + `<section class="card receipt"><div class="check" aria-hidden="true">✓</div><h2>${esc(submission.title)}</h2>${details([['제출 시각', when(submission.time)], ['제출 상태', '제출 완료']])}<details class="disclosure material"><summary>제출한 본문과 AI 활용 내용 보기</summary><p class="plain-text">${esc(submission.body)}</p><section class="material"><h3>AI 활용 내용</h3>${reportSummary(submission.report)}</section></details></section><div class="actions end">${link('s-home', '내 과제로 돌아가기', { secondary: true })}</div>`;
+}
+
+function reviewFor(id) { return state.reviews[id] || { paragraph: 0, question: '', score: null }; }
+function submissionFor(id) { return id === 'sample' ? exampleSubmission : id === 'self' ? state.submitted : null; }
+function progressFor(submission) {
+  if (!submission) return '미제출';
+  const review = reviewFor(submission.id);
+  if (review.score) return '평가 완료';
+  if (review.question) return '질문 준비 완료';
+  return '검토 대기';
+}
+function rosterItems() {
+  return [
+    { name: '김하윤', submission: state.submitted },
+    { name: '박서준', submission: exampleSubmission },
+    { name: '이수빈', submission: null },
+  ];
+}
+function rosterMarkup() {
+  const rows = rosterItems().filter(({ name, submission }) => name.includes(filter.query.trim()) && (filter.status === 'all' || progressFor(submission) === filter.status));
+  if (!rows.length) return '<p class="muted material">조건에 맞는 학생이 없어요.</p>';
+  return `<ul class="roster">${rows.map(({ name, submission }) => {
+    const status = progressFor(submission);
+    return `<li><div><strong>${name}</strong>${submission ? `<p class="small muted">${esc(when(submission.time))} 제출</p>` : ''}</div>${pill(status, status === '미제출' ? 'neutral' : status === '검토 대기' ? 'amber' : '')}<div>${submission ? link('t-read', '검토하기', { student: submission.id, secondary: true, compact: true }) : '<span class="small muted">제출물 없음</span>'}</div></li>`;
+  }).join('')}</ul>`;
+}
+function teacherRoster() {
+  const ready = rosterItems().filter(({ submission }) => submission).length;
+  return intro('학생 제출 현황', `제출 ${ready}명 · 미제출 ${rosterItems().length - ready}명`, `${state.assignment.course} · ${state.assignment.section} · ${state.assignment.title}`) + `<section class="card">
+    <div class="filters"><label class="field">검토 상태<select name="status" id="roster-status">${[['all', '전체'], ['검토 대기', '검토 대기'], ['질문 준비 완료', '질문 준비 완료'], ['평가 완료', '평가 완료'], ['미제출', '미제출']].map(([value, label]) => `<option value="${value}"${filter.status === value ? ' selected' : ''}>${label}</option>`).join('')}</select></label><label class="field">학생 검색<input id="roster-query" type="search" value="${esc(filter.query)}" placeholder="이름으로 검색"></label></div>
+    <div id="roster-results" aria-live="polite">${rosterMarkup()}</div></section>`;
+}
+function tabs(active, id) {
+  const routes = [['t-read', '최종 제출물'], ['t-evidence', 'AI 활용 근거'], ['t-question', '구술 질문'], ['t-score', '구술평가']];
+  return `<nav class="work-tabs" aria-label="학생 검토 메뉴">${routes.map(([key, label]) => `<a href="${href(key, id)}"${key === active ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
+}
+function teacherIntro(submission, title, view, subtitle = '') {
+  return back('t-roster', '학생 제출 현황') + intro(title, subtitle, `${submission.name} · ${submission.assignmentTitle}`) + tabs(view, submission.id);
+}
+function teacherRead(submission) {
+  return teacherIntro(submission, '최종 제출물', 't-read') + `<article class="card stack roomy">
+    <div class="row adapt"><h2>${esc(submission.title)}</h2>${pill(progressFor(submission))}</div>
+    <ol class="paragraph-list">${paragraphs(submission.body).map((paragraph, index) => `<li><h3 class="small muted">문단 ${index + 1}</h3><p class="plain-text">${esc(paragraph)}</p><button class="text-link" type="button" data-action="question-from-paragraph" data-index="${index}">이 문단에서 질문 작성</button></li>`).join('')}</ol>
+    </article><div class="actions end">${link('t-evidence', 'AI 활용 근거 보기', { student: submission.id, secondary: true })}</div>`;
+}
+
+function teacherEvidence(submission) {
+  const { report, id } = submission;
+  const heading = teacherIntro(submission, 'AI 활용 근거', 't-evidence');
+  if (report.mode !== 'shared') return heading + `<section class="card"><h2>${report.mode === 'none' ? '학생이 AI 미사용을 확인했어요' : '학생이 작성한 활용 설명'}</h2>${report.mode === 'manual' ? reportSummary(report) : ''}<p class="muted small">공유된 문연 대화가 없어요.</p></section><div class="actions end">${link('t-question', '구술 질문 작성', { student: id })}</div>`;
+  return heading + `<section class="card row adapt"><div>${pill('학생이 공유한 대화')}<h2 style="margin-top:8px">문단 ${report.paragraph + 1} · 활용 사례</h2><p class="muted">${esc(report.question)}</p></div>${link('t-evidence-item', '근거 열기', { student: id })}</section>`;
+}
+
+function teacherEvidenceItem(submission) {
+  const { report, id, body } = submission;
+  return back('t-evidence', 'AI 활용 근거', id) + intro('공유된 대화', '', `${submission.name} · 문단 ${report.paragraph + 1}`) + `<div class="stack">
+    <section class="card"><h2>연결한 제출 문단</h2><p class="excerpt">${esc(selectedParagraph(body, report.paragraph))}</p></section>
+    <section class="card"><h2>학생이 공유한 발췌</h2>${details([['학생 질문', report.question], ['AI 답변', report.reply]])}</section>
+    <section class="card tint"><h2>학생의 활용 설명</h2><p class="plain-text">${esc(report.explanation)}</p></section></div>
+    <div class="actions end"><button class="button" type="button" data-action="question-from-paragraph" data-index="${report.paragraph}">이 근거로 질문 작성</button></div>`;
+}
+
+function teacherQuestion(submission) {
+  const { id, body } = submission;
+  const review = reviewFor(id);
+  return teacherIntro(submission, '구술 질문', 't-question') + `<form data-form="question"><div class="stack">
+    <section class="card fields"><label>근거 문단<select name="paragraph">${paragraphs(body).map((paragraph, index) => `<option value="${index}"${index === review.paragraph ? ' selected' : ''}>문단 ${index + 1} · ${esc(paragraph.slice(0, 38))}</option>`).join('')}</select></label>
+      <details class="disclosure"><summary>선택 문단 보기</summary><p id="question-excerpt" class="excerpt">${esc(selectedParagraph(body, review.paragraph))}</p></details>
+      <label>학생에게 물을 질문<textarea name="question" rows="4" required maxlength="1200" placeholder="예: 이 기준을 선택한 이유는 무엇인가요?">${esc(review.question)}</textarea></label>
+      <button type="button" class="text-link" data-action="example-question">예시 질문 불러오기</button>
+    </section>${review.question ? `<p class="notice">${review.score ? '평가 완료' : '질문 준비 완료'}${review.score ? ' · 질문 또는 근거를 바꾸면 기존 평가가 초기화돼요.' : ''}</p>` : ''}
+    <p id="screen-status" class="notice" role="status"${notice ? '' : ' hidden'}>${esc(notice)}</p></div>
+    <div class="actions">${review.question ? link('t-score', '구술평가 열기', { student: id, secondary: true }) : '<span></span>'}${button('구술 질문 저장')}</div></form>`;
+}
+
+function teacherScore(submission) {
+  const { id } = submission;
+  const review = reviewFor(id);
+  const heading = teacherIntro(submission, '구술평가', 't-score');
+  if (!review.question) return heading + `<section class="card"><h2>저장된 구술 질문이 없어요</h2><p class="muted">질문을 준비하면 이 화면에서 평가를 기록할 수 있어요.</p></section><div class="actions end">${link('t-question', '구술 질문 작성', { student: id })}</div>`;
+  const criteria = [['reason', '선택의 근거'], ['transfer', '조건이 달라질 때의 판단']];
+  return heading + `<form data-form="score"><div class="stack"><section class="card"><h2>저장된 질문</h2><p>${esc(review.question)}</p></section>
+    <section class="card fields"><h2>평가 기록</h2>${criteria.map(([key, label]) => `<fieldset><legend>${label}</legend><div class="scores">${[0, 1, 2].map(value => `<label><input type="radio" name="${key}" value="${value}" required${review.score?.[key] === value ? ' checked' : ''}> ${value}점</label>`).join('')}</div></fieldset>`).join('')}
+    <label>평가 메모<textarea name="memo" rows="3" maxlength="2000">${esc(review.score?.memo)}</textarea></label></section>
+    ${review.score ? `<p class="notice" role="status">평가 저장 완료 · ${review.score.reason + review.score.transfer} / 4점</p>` : ''}</div>
+    <div class="actions">${link('t-roster', '학생 목록으로', { secondary: true })}${button('평가 저장')}</div></form>`;
+}
+
+function teacherSetup() {
+  const assignment = policyDraft || state.assignment;
+  return intro('과제 설정', '', state.assignment.course) + `<form data-form="setup"><section class="card fields">
+    <label>과제 제목<input name="title" maxlength="160" value="${esc(assignment.title)}" required></label>
+    <label>제출 마감 <span class="hint">한국 시간 기준</span><input type="datetime-local" name="due" value="${esc(assignment.due)}" required></label>
+    <label>과제 안내<textarea name="prompt" rows="5" maxlength="1600" required>${esc(assignment.prompt)}</textarea></label>
+    </section>${notice ? `<p class="notice material" role="status">${esc(notice)}</p>` : ''}<div class="actions end">${button('AI 활용 기준으로')}</div></form>`;
+}
+
+function teacherPolicy() {
+  const assignment = policyDraft || state.assignment;
+  return back('t-setup', '과제 설정') + intro('AI 활용 기준', '학생이 과제를 열면 이 기준이 표시돼요.', assignment.title) + `<form data-form="policy"><section class="card fields">
+    <label>허용하는 도움<textarea name="allowed" rows="3" maxlength="500">${esc(assignment.allowed)}</textarea></label>
+    <label>제한하는 도움<textarea name="restricted" rows="3" maxlength="500">${esc(assignment.restricted)}</textarea></label>
+    </section><div class="actions end">${button('시안에 과제 설정 저장')}</div></form>`;
+}
+
+const studentViews = {
+  's-home': studentHome,
+  's-assignment': assignmentView,
+  's-chat': studentChat,
+  's-write': studentWrite,
+  's-report': studentReport,
+  's-evidence': studentEvidence,
+  's-confirm': studentConfirm,
+  's-receipt': studentReceipt,
+};
+const teacherViews = {
+  't-roster': teacherRoster,
+  't-read': teacherRead,
+  't-evidence': teacherEvidence,
+  't-evidence-item': teacherEvidenceItem,
+  't-question': teacherQuestion,
+  't-score': teacherScore,
+  't-setup': teacherSetup,
+  't-policy': teacherPolicy,
+};
+const teacherReviewViews = new Set(['t-read', 't-evidence', 't-evidence-item', 't-question', 't-score']);
+const studentEditViews = new Set(['s-write', 's-report', 's-evidence', 's-confirm']);
+
+function render({ focus = true } = {}) {
+  let [key, id] = location.hash.slice(1).split('/');
+  if (!Object.hasOwn(studentViews, key) && !Object.hasOwn(teacherViews, key)) key = 's-home';
+  if (state.submitted && studentEditViews.has(key)) key = 's-receipt';
+  if (!state.submitted && key === 's-receipt') key = 's-home';
+  if (teacherReviewViews.has(key) && !submissionFor(id)) key = 't-roster';
+  if (key === 't-evidence-item' && submissionFor(id).report.mode !== 'shared') key = 't-evidence';
+  if (['s-report', 's-evidence', 's-confirm'].includes(key) && !draftValid()) key = 's-write';
+  if (key === 's-confirm' && !reportValid()) key = 's-report';
+  if (!teacherReviewViews.has(key)) id = null;
+  const hash = href(key, id);
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+  const isTeacher = Object.hasOwn(teacherViews, key);
+  const inSetup = ['t-setup', 't-policy'].includes(key);
+  const changePage = current?.key !== key || current?.id !== id;
+  current = { key, id };
+  masthead.innerHTML = `<div class="masthead-inner"><a class="brand" href="${isTeacher ? '#t-roster' : '#s-home'}"><span class="mark" aria-hidden="true">文</span><span><strong>문연</strong><small>과제 워크스페이스</small></span></a><div class="demo"><span>시안 역할</span><nav class="switch" aria-label="시안 역할 전환"><a href="#s-home"${isTeacher ? '' : ' aria-current="page"'}>학생</a><a href="#t-roster"${isTeacher ? ' aria-current="page"' : ''}>교수자</a></nav></div></div>`;
+  navigation.innerHTML = `<div class="navigation-inner">${isTeacher ? `<a href="#t-roster"${inSetup ? '' : ' aria-current="page"'}>제출물 검토</a><a href="#t-setup"${inSetup ? ' aria-current="page"' : ''}>과제 설정</a>` : '<a href="#s-home" aria-current="page">내 과제</a>'}</div>`;
+  workspace.className = key === 't-roster' ? 'wide' : '';
+  workspace.innerHTML = (isTeacher ? teacherViews[key] : studentViews[key])(submissionFor(id));
+  notice = '';
+  if (focus && changePage) {
+    window.scrollTo(0, 0);
+    document.getElementById('screen-title').focus({ preventScroll: true });
+  }
+}
+
+function marked(form, label) {
+  const field = form.elements[label];
+  if (field.value.trim()) return true;
+  field.setCustomValidity('내용을 입력해 주세요.');
+  field.reportValidity();
+  return false;
+}
+function draftValid() { return Boolean(state.draft.title.trim() && state.draft.body.trim()); }
+function reportValid() {
+  const { mode, paragraph, exchange, manualExplanation, explanation, connectionChecked } = state.report;
+  if (mode === 'manual') return Boolean(manualExplanation.trim());
+  if (mode === 'shared') return Boolean(connectionChecked && state.chat[exchange] && paragraphs(state.draft.body)[paragraph] && explanation.trim());
+  return mode === 'none';
+}
+function applyDraftFields(form) {
+  if (state.draft.body !== form.elements.body.value) state.report.connectionChecked = false;
+  state.draft.title = form.elements.title.value;
+  state.draft.body = form.elements.body.value;
+  const last = Math.max(0, paragraphs(state.draft.body).length - 1);
+  state.report.paragraph = Math.min(state.report.paragraph, last);
+  save();
+}
+
+workspace.addEventListener('submit', event => {
+  const form = event.target;
+  const action = form.dataset.form;
+  if (!action) return;
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(form));
+  switch (action) {
+    case 'write':
+      if (!marked(form, 'title') || !marked(form, 'body')) return;
+      applyDraftFields(form);
+      go('s-report');
+      break;
+    case 'report':
+      if (values.mode === 'manual' && !marked(form, 'explanation')) return;
+      state.report.mode = values.mode;
+      if (values.mode === 'manual') state.report.manualExplanation = values.explanation.trim();
+      save();
+      go(reportValid() ? 's-confirm' : 's-evidence');
+      break;
+    case 'evidence':
+      if (!marked(form, 'explanation')) return;
+      Object.assign(state.report, { mode: 'shared', paragraph: Number(values.paragraph), exchange: Number(values.exchange), explanation: values.explanation.trim(), connectionChecked: true });
+      save();
+      go('s-confirm');
+      break;
+    case 'submit':
+      if (!state.submitted && draftValid() && reportValid()) {
+        state.submitted = { ...state.draft, id: 'self', name: '김하윤', time: new Date().toISOString(), assignmentTitle: state.assignment.title, report: currentReport() };
+        save();
+      }
+      go('s-receipt');
+      break;
+    case 'chat': {
+      if (!marked(form, 'question')) return;
+      const reply = '과제 지침에서 허용된 도움을 먼저 확인해 보세요. 그다음 이미 관찰한 문제와 그 문제를 확인할 근거를 한 문장씩 적어보면 초안을 시작하기 쉬워요.';
+      state.chat.push({ question: values.question.trim(), reply });
+      save();
+      render({ focus: false });
+      const answers = workspace.querySelectorAll('.conversation li');
+      answers[answers.length - 1].scrollIntoView({ block: 'nearest' });
+      workspace.querySelector('.composer input').focus({ preventScroll: true });
+      break;
+    }
+    case 'question': {
+      if (!marked(form, 'question')) return;
+      const previous = reviewFor(current.id);
+      const question = values.question.trim();
+      const paragraph = Number(values.paragraph);
+      const changed = previous.question !== question || previous.paragraph !== paragraph;
+      if (changed && previous.score && !window.confirm('질문 또는 근거가 바뀌면 기존 평가가 초기화돼요. 저장할까요?')) return;
+      state.reviews[current.id] = { paragraph, question, score: changed ? null : previous.score };
+      save();
+      notice = '구술 질문을 저장했어요.';
+      render({ focus: false });
+      document.getElementById('screen-status').setAttribute('tabindex', '-1');
+      document.getElementById('screen-status').focus();
+      break;
+    }
+    case 'score': {
+      const previous = reviewFor(current.id);
+      state.reviews[current.id] = { ...previous, score: { reason: Number(values.reason), transfer: Number(values.transfer), memo: values.memo.trim() } };
+      save();
+      render({ focus: false });
+      workspace.querySelector('[role="status"]').setAttribute('tabindex', '-1');
+      workspace.querySelector('[role="status"]').focus();
+      break;
+    }
+    case 'setup':
+      if (!marked(form, 'title') || !marked(form, 'prompt')) return;
+      policyDraft = { ...(policyDraft || state.assignment), title: values.title.trim(), due: values.due, prompt: values.prompt.trim() };
+      go('t-policy');
+      break;
+    case 'policy':
+      state.assignment = { ...(policyDraft || state.assignment), allowed: values.allowed.trim(), restricted: values.restricted.trim() };
+      policyDraft = null;
+      save();
+      notice = '과제 설정을 시안에 저장했어요.';
+      go('t-setup');
+      break;
+  }
+});
+
+let fileRead = 0;
+workspace.addEventListener('change', async event => {
+  const target = event.target;
+  if (target.name === 'mode' && target.form?.dataset.form === 'report') {
+    state.report.mode = target.value;
+    save();
+    render({ focus: false });
+    workspace.querySelector('input[name="mode"]:checked').focus({ preventScroll: true });
+  }
+  if (target.name === 'exchange' && current.key === 's-evidence') document.getElementById('exchange-preview').textContent = state.chat[Number(target.value)]?.reply || '';
+  if (target.name === 'paragraph' && current.key === 't-question') document.getElementById('question-excerpt').textContent = selectedParagraph(submissionFor(current.id).body, Number(target.value));
+  if (target.id === 'roster-status') {
+    filter.status = target.value;
+    document.getElementById('roster-results').innerHTML = rosterMarkup();
+  }
+  if (target.id !== 'draft-file') return;
+  const file = target.files[0];
+  if (!file) return;
+  const status = document.getElementById('file-status');
+  const sequence = ++fileRead;
+  if (!file.name.toLowerCase().endsWith('.txt') || file.size > 64 * 1024) {
+    status.textContent = '64 KiB 이하의 .txt 파일을 선택해 주세요.';
+    return;
+  }
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+    if (sequence !== fileRead || !workspace.contains(target)) return;
+    if (!text.trim() || text.length > 16000) {
+      status.textContent = '본문이 비어 있거나 16,000자를 넘어요.';
+      return;
+    }
+    target.form.elements.body.value = text.replace(/\r\n?/g, '\n');
+    state.draft.file = file.name;
+    applyDraftFields(target.form);
+    status.textContent = `${file.name} · 본문에 반영했어요.`;
+    document.getElementById('draft-status').textContent = savedLabel();
+  } catch {
+    if (workspace.contains(target)) status.textContent = '파일을 읽을 수 없어요. UTF-8로 저장한 .txt 파일을 선택해 주세요.';
+  }
+});
+
+workspace.addEventListener('input', event => {
+  const input = event.target;
+  if (input.setCustomValidity) input.setCustomValidity('');
+  if (input.form?.dataset.form === 'write' && ['title', 'body'].includes(input.name)) {
+    applyDraftFields(input.form);
+    document.getElementById('draft-status').textContent = savedLabel();
+  }
+  if (input.form?.dataset.form === 'report' && input.name === 'explanation') {
+    state.report.manualExplanation = input.value;
+    save();
+  }
+  if (input.id === 'roster-query') {
+    filter.query = input.value;
+    document.getElementById('roster-results').innerHTML = rosterMarkup();
+  }
+});
+
+let preferredParagraph = null;
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-skip]')) {
+    event.preventDefault();
+    workspace.focus();
+    return;
+  }
+  const control = event.target.closest('[data-action]');
+  if (!control) return;
+  switch (control.dataset.action) {
+    case 'reset':
+      if (!window.confirm('이 브라우저의 시안 입력과 제출 기록을 초기화할까요?')) return;
+      state = freshState();
+      policyDraft = null;
+      filter = { status: 'all', query: '' };
+      save();
+      go('s-home');
+      break;
+    case 'select-exchange':
+      state.report.mode = 'shared';
+      state.report.exchange = Number(control.dataset.index);
+      state.report.connectionChecked = false;
+      save();
+      go(draftValid() ? 's-evidence' : 's-write');
+      break;
+    case 'question-from-paragraph':
+      preferredParagraph = { id: current.id, index: Number(control.dataset.index) };
+      go('t-question', current.id);
+      break;
+    case 'example-question': {
+      const textarea = workspace.querySelector('textarea[name="question"]');
+      if (textarea.value.trim() && !window.confirm('입력한 질문을 예시 질문으로 바꿀까요?')) return;
+      textarea.value = sampleQuestion;
+      textarea.setCustomValidity('');
+      textarea.focus();
+      break;
+    }
+  }
+});
+
+window.addEventListener('hashchange', () => {
+  render();
+  if (preferredParagraph && current.key === 't-question' && current.id === preferredParagraph.id) {
+    const select = workspace.querySelector('select[name="paragraph"]');
+    select.value = String(preferredParagraph.index);
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  preferredParagraph = null;
+});
+render({ focus: false });
+</script>
+</body>
+</html>

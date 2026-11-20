@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>문연 · 과제 작업실</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #192c23;
+    --muted: #53665b;
+    --forest: #173c2c;
+    --green: #225c41;
+    --hover: #174a32;
+    --paper: #f8f8f3;
+    --white: #fff;
+    --sage: #e9f1e6;
+    --line: #dbe2d9;
+    --outline: #87998a;
+    --amber: #f7efd9;
+    --brown: #674c17;
+    --radius: 16px;
+    --shadow: 0 2px 3px #173c2c08;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; word-break: keep-all; overflow-wrap: anywhere; }
+  h1, h2, h3, p, ul, ol, dl { margin: 0; }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.18; letter-spacing: -.055em; text-wrap: balance; }
+  h2 { font-size: 21px; line-height: 1.35; letter-spacing: -.035em; }
+  h3 { font-size: 16px; line-height: 1.5; }
+  a { color: inherit; }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid #10795e; outline-offset: 4px; }
+  .skip { position: absolute; z-index: 3; left: 12px; top: 8px; padding: 8px 14px; background: white; transform: translateY(-160%); }
+  .skip:focus { transform: none; }
+  .masthead { background: var(--forest); color: white; }
+  .masthead-inner { max-width: 1800px; min-height: 61px; margin: auto; padding: 8px 25px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; }
+  .mark { display: grid; place-items: center; width: 37px; height: 37px; border: 1px solid #ffffff35; background: #24543e; border-radius: 10px; font: 20px/1 'Apple SD Gothic Neo', sans-serif; }
+  .brand strong { display: block; font-size: 21px; line-height: 1.1; letter-spacing: -.05em; }
+  .brand small { display: block; margin-top: 3px; color: #d5e5d9; font-size: 12px; }
+  .demo { display: flex; align-items: center; gap: 12px; }
+  .demo > span { color: #d5e5d9; font-size: 13px; }
+  .switch { display: flex; padding: 3px; gap: 2px; border: 1px solid #ffffff50; border-radius: 9px; }
+  .switch a { display: grid; min-height: 38px; align-items: center; padding: 0 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 700; }
+  .switch a[aria-current] { color: var(--forest); background: #eff5ed; }
+  .switch a:focus-visible, .brand:focus-visible { outline-color: #b3efc7; }
+  .navigation { background: var(--white); border-bottom: 1px solid var(--line); }
+  .navigation-inner { max-width: 1248px; min-height: 52px; margin: auto; display: flex; align-items: stretch; gap: 28px; padding: 0 32px; }
+  .navigation a { display: flex; align-items: center; padding: 0 4px; border-bottom: 2px solid transparent; text-decoration: none; font-size: 14px; color: var(--muted); }
+  .navigation a[aria-current] { border-bottom-color: var(--green); color: var(--green); font-weight: 750; }
+  main { width: min(100% - 64px, 780px); min-height: calc(100vh - 205px); margin: 0 auto; padding: 38px 0 58px; }
+  main.wide { width: min(100% - 64px, 980px); }
+  .trail { display: inline-flex; align-items: center; min-height: 38px; margin: -7px 0 17px; text-decoration: none; color: var(--green); font-weight: 650; font-size: 14px; }
+  .trail:hover, .text-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .intro { margin-bottom: 27px; }
+  .context { color: var(--green); font-size: 14px; font-weight: 750; margin-bottom: 7px; }
+  .subtitle { color: var(--muted); margin-top: 9px; }
+  .stack { display: grid; gap: 14px; }
+  .stack.roomy { gap: 20px; }
+  .card { padding: 23px 25px; border: 1px solid var(--line); background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card h2 + p, .card h3 + p { margin-top: 6px; }
+  .card.tint { background: var(--sage); border-color: #d4e4d1; }
+  .card > :is(h2, h3) + dl { margin-top: 10px; }
+  .muted { color: var(--muted); }
+  .small { font-size: 14px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .row.start { align-items: start; }
+  .tags { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+  .pill { display: inline-flex; align-items: center; flex: none; width: fit-content; padding: 3px 9px; border-radius: 6px; background: var(--sage); color: #235139; font-size: 13px; font-weight: 720; }
+  .pill.neutral { color: #485c50; background: #eff2ed; }
+  .pill.amber { color: var(--brown); background: var(--amber); }
+  .actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; }
+  .actions.end { justify-content: flex-end; }
+  .button { display: inline-flex; min-height: 46px; justify-content: center; align-items: center; gap: 8px; padding: 10px 16px; border: 1px solid transparent; border-radius: 9px; text-decoration: none; background: var(--green); color: white; font-size: 15px; font-weight: 730; line-height: 1.4; text-align: center; }
+  .button:hover { background: var(--hover); }
+  .button.secondary { background: var(--white); border-color: var(--outline); color: var(--green); }
+  .button.secondary:hover { background: var(--sage); }
+  .button.compact { min-height: 42px; padding: 8px 13px; font-size: 14px; }
+  .text-link { color: var(--green); font-size: 14px; font-weight: 700; text-underline-offset: 3px; }
+  button.text-link { border: 0; background: transparent; padding: 8px 0; text-align: left; }
+  .details > div { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 12px; padding: 9px 0; }
+  .details > div + div { border-top: 1px solid var(--line); }
+  .details dt { color: var(--muted); font-size: 14px; font-weight: 700; }
+  .details dd { margin: 0; white-space: pre-line; }
+  .assignment-list { list-style: none; padding: 0; }
+  .assignment-list .card h2 { margin-bottom: 5px; }
+  .assignment-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: -10px 0 21px; color: var(--muted); font-size: 14px; }
+  .rule-list { list-style: none; padding: 0; margin-top: 10px; }
+  .rule-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: start; padding: 7px 0; }
+  .steps { list-style: none; display: flex; flex-wrap: wrap; gap: 7px 14px; align-items: center; margin: 0 0 18px; padding: 0; }
+  .steps li { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .steps li + li::before { content: '/'; color: #63776a; margin-right: 7px; }
+  .steps li[aria-current] { color: var(--green); font-weight: 760; }
+  .steps b { display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; border: 1px solid #819588; line-height: 1; }
+  .steps li[aria-current] b { border-color: var(--green); background: var(--green); color: white; }
+  .fields { display: grid; gap: 16px; }
+  .fields label, .field { display: grid; gap: 6px; font-size: 14px; font-weight: 720; }
+  input:not([type=radio], [type=checkbox], [type=file]), textarea, select { width: 100%; padding: 9px 12px; min-height: 45px; background: white; border: 1px solid var(--outline); border-radius: 8px; line-height: 1.5; font-size: 16px; font-weight: 450; }
+  textarea { min-height: 100px; resize: vertical; }
+  input[type=checkbox], input[type=radio] { accent-color: var(--green); width: 18px; height: 18px; margin: 0; flex: none; }
+  .hint { font-size: 13px; color: var(--muted); font-weight: 450; }
+  .choice { display: flex; align-items: center; gap: 9px; min-height: 44px; }
+  fieldset { padding: 0; border: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; font-weight: 750; }
+  .notice { padding: 11px 15px; border: 1px solid #d5e2d4; background: var(--sage); border-radius: 9px; font-size: 14px; }
+  .notice.warn { color: var(--brown); background: var(--amber); border-color: #eadbb2; }
+  .notice[hidden] { display: none; }
+  .receipt { padding: 29px 29px 25px; }
+  .check { display: grid; width: 44px; height: 44px; place-items: center; margin-bottom: 11px; border-radius: 50%; background: var(--sage); color: var(--green); font-size: 25px; font-weight: 750; }
+  .plain-text { white-space: pre-wrap; }
+  .excerpt { margin-top: 6px; border-left: 3px solid #86a78f; padding-left: 12px; white-space: pre-wrap; }
+  .material { border-top: 1px solid var(--line); padding-top: 13px; margin-top: 14px; }
+  .disclosure summary { cursor: pointer; color: var(--green); font-weight: 700; }
+  .disclosure[open] summary { margin-bottom: 9px; }
+  .composer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; }
+  .filters { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: end; }
+  .roster { list-style: none; margin: 14px 0 0; padding: 0; }
+  .roster li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(136px, .58fr) auto; gap: 12px; align-items: center; padding: 13px 2px; border-top: 1px solid var(--line); }
+  .roster li:first-child { border-top: 0; }
+  .work-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: -5px 0 20px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .work-tabs a { display: inline-flex; align-items: center; min-height: 42px; padding: 7px 12px; color: var(--muted); border: 1px solid transparent; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 700; }
+  .work-tabs a:hover { background: #eff2ed; }
+  .work-tabs a[aria-current] { color: var(--green); background: var(--sage); border-color: #cbdccb; }
+  .scores { display: flex; flex-wrap: wrap; gap: 13px; margin-top: 5px; }
+  .scores label { display: flex; align-items: center; gap: 6px; min-height: 43px; padding: 6px 11px; border: 1px solid var(--outline); border-radius: 8px; }
+  footer { width: min(100% - 64px, 980px); display: flex; justify-content: space-between; align-items: center; gap: 14px; margin: 0 auto; padding: 14px 0 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  @media (max-width: 600px) {
+    .masthead-inner { min-height: 68px; padding: 10px 16px; }
+    .brand small, .demo > span { display: none; }
+    .navigation-inner { gap: 16px; padding: 0 16px; }
+    main, main.wide, footer { width: calc(100% - 32px); }
+    main { padding: 26px 0 38px; }
+    .card, .receipt { padding: 18px; }
+    .row.adapt { align-items: start; flex-direction: column; }
+    .details > div { grid-template-columns: 90px minmax(0, 1fr); gap: 8px; }
+    .roster li { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; }
+    .roster li > :nth-child(2) { grid-row: 2; }
+    .roster li > :nth-child(3) { grid-area: 1 / 2 / 3 / 3; }
+  }
+  @media (max-width: 380px) {
+    .filters, .composer { grid-template-columns: 1fr; }
+    .work-tabs { gap: 4px; }
+    .work-tabs a { padding-inline: 7px; }
+  }
+</style>
+<style>
+  :root { --forest:#17362b; --green:#245b43; --paper:#f4f5ef; --line:#dce4db; --sage:#e9f2e9; --muted:#50645a; }
+  .icon { width: 19px; height: 19px; flex: none; vertical-align: middle; stroke: currentColor; fill: none; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+  .icon.small-icon { width: 15px; height: 15px; }
+  .icon-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 39px; padding: 6px 10px; background: transparent; border: 1px solid transparent; border-radius: 8px; color: var(--green); text-decoration:none; font-size:13px; font-weight: 700; }
+  .icon-button:hover { background: var(--sage); }
+  .icon-button.bordered { border-color: var(--line); background: white; }
+  main.workbench { width: 100%; max-width: 1800px; min-height: 0; padding: 0; }
+  body.in-workbench #navigation, body.in-workbench > footer { display: none; }
+  .workbench-shell { display: flex; flex-direction: column; min-width: 0; height: calc(100dvh - 61px); min-height: 545px; border: 1px solid var(--line); border-top: 0; background: #fff; }
+  .workbench-top { display: flex; flex: none; min-height: 79px; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 24px; border-bottom: 1px solid var(--line); background: #fff; }
+  .workbench-heading { display: flex; gap: 11px; align-items: center; min-width: 0; }
+  .workbench-heading > div { min-width: 0; }
+  .workbench-heading h1 { font-size: clamp(21px, 2.4vw, 28px); letter-spacing: -.055em; line-height: 1.27; }
+  .workbench-heading .context { color: var(--muted); font-size: 12px; margin: 0 0 2px; font-weight: 650; }
+  .workbench-actions, .save-indicator { display: flex; flex: none; align-items: center; gap: 8px; }
+  .workbench-actions { gap: 12px; }
+  .save-indicator { color: var(--muted); font-size: 13px; }
+  .save-indicator .icon { color: var(--green); }
+  .workbench-grid { display: grid; flex: 1; min-height: 0; min-width: 0; }
+  .student-grid { grid-template-columns: clamp(187px, 15vw, 230px) minmax(292px, .82fr) minmax(0, 1.65fr); }
+  .teacher-grid { grid-template-columns: clamp(195px, 16vw, 240px) minmax(0, 1.38fr) minmax(306px, .95fr); }
+  .pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .pane + .pane { border-left: 1px solid var(--line); }
+  .pane-head { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height: 58px; padding: 10px 18px; border-bottom: 1px solid var(--line); background: #fff; flex:none; }
+  .pane-head h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  .pane-head h2 .icon { color: var(--green); }
+  .pane-scroll { flex: 1; min-height: 0; overflow: auto; scrollbar-width: thin; }
+  .rail { background: #f6f8f3; }
+  .rail-content { display: grid; align-content:start; gap: 20px; padding: 19px 13px; }
+  .rail .pane-head { background: transparent; }
+  .course-name { margin: 0 5px; color: var(--muted); font-size: 13px; font-weight: 730; }
+  .rail-link, .roster-person { display:flex; align-items:flex-start; gap: 9px; width: 100%; padding: 10px; color: var(--ink); border:1px solid transparent; border-radius: 9px; background: transparent; text-align: left; text-decoration:none; font-size: 14px; line-height: 1.42; }
+  .rail-link strong, .roster-person strong { display:block; font-weight:750; }
+  .rail-link small, .roster-person small { display:block; color: var(--muted); margin-top: 3px; }
+  .rail-link[aria-current], .roster-person[aria-current] { border-color:#cfe0d1; background:#e5efe4; color:#214d39; }
+  .rail-link:hover, a.roster-person:hover { background: var(--sage); }
+  .rail-link .icon { margin-top:2px; }
+  .rail-foot { margin-top:auto; padding: 11px 14px; border-top:1px solid var(--line); }
+  .rail-foot .icon-button { justify-content:flex-start; }
+  .rail-tools { display: grid; gap: 8px; }
+  .rail-tools .field { gap: 4px; font-size: 12px; }
+  .rail-tools :is(select,input) { min-height: 37px !important; border-color: var(--line) !important; font-size: 14px !important; }
+  .rail-roster { padding: 0; display: grid; gap: 4px; list-style: none; }
+  .initial { display: inline-grid; flex: none; width: 31px; height: 31px; place-items: center; border: 1px solid #d9e4d8; border-radius: 9px; background: #eef2eb; color: #365344; font-size: 13px; font-weight: 740; }
+  .roster-person[aria-current] .initial { background: white; }
+  .roster-person.is-muted { color: var(--muted); }
+  .pane-navigation { display: none; }
+  .pane-head .meta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .chat-pane { background: #fff; }
+  .chat-body { display: flex; flex-direction: column; min-height:0; }
+  .chat-rules { margin: 13px 15px 0; padding: 8px 10px; border: 1px solid #dce8dc; border-radius: 9px; background: #f2f7f0; font-size: 13px; }
+  .chat-rules .rule-list { margin: 3px 0 0; }
+  .chat-rules .rule-list li { grid-template-columns: auto 1fr; gap: 8px; align-items: center; }
+  .chat-rules .pill { font-size: 11px; }
+  .chat-stream { display: grid; gap: 16px; padding: 17px 15px 13px; list-style:none; }
+  .chat-turn { min-width:0; display: grid; gap: 9px; }
+  .chat-message { max-width: 100%; border-radius: 12px; padding: 10px 12px; white-space: pre-wrap; font-size: 14px; line-height: 1.64; }
+  .chat-message.mine { justify-self: end; max-width: 94%; padding: 8px 12px; background: #e8f1e6; }
+  .chat-message.ai { background: #f4f6f2; border:1px solid #edf0eb; }
+  .chat-message strong { display:flex; align-items:center; gap:6px; margin-bottom:5px; color: var(--green); font-size: 12px; }
+  .chat-message .chat-context { margin: 3px 0 0; color: var(--muted); font-size:12px; }
+  .chat-select { display: flex; justify-content: flex-start; }
+  .chat-select .icon-button { min-height: 34px; padding: 4px 7px; font-size: 12px; }
+  .chat-select [aria-pressed=true] { background: var(--sage); }
+  .chat-compose { flex:none; padding: 11px 15px 13px; border-top: 1px solid var(--line); background: #fff; }
+  .prompt-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .prompt-list button { padding: 4px 8px; min-height: 31px; border-radius: 6px; border: 1px solid var(--line); background: white; color: var(--green); font-size: 12px; font-weight: 680; }
+  .prompt-list button:hover { background:var(--sage); }
+  .chat-compose .composer { display: flex; align-items: center; gap: 6px; padding:5px; border:1px solid #a5b4a8; border-radius: 10px; }
+  .chat-compose .composer input { min-width:0; min-height: 36px; padding: 6px 7px; border: 0; }
+  .chat-compose .composer .button { min-width: 39px; min-height: 38px; padding: 7px; }
+  .chat-compose .hint { margin-top:6px; }
+  .context-chip { display:flex; align-items:center; justify-content:space-between; gap: 5px; margin: 0 0 7px; padding: 4px 7px; border-radius:6px; background:var(--sage); font-size: 12px; }
+  .context-chip[hidden] { display:none; }
+  .context-chip span { overflow: hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .context-chip button { border:0; padding:2px 7px; background:transparent; }
+  .editor-pane, .reader-pane { background: #edf0ea; }
+  .editor-form { flex: 1; display: flex; flex-direction: column; min-height:0; }
+  .editor-tools { display:flex; flex-wrap: wrap; align-items:center; gap:6px; flex:none; padding: 5px 12px; border-bottom:1px solid var(--line); background:#fbfcfa; }
+  .editor-tools .icon-button { min-height:35px; }
+  .paper-scroll { padding: 19px clamp(12px, 2vw, 29px); }
+  .paper-sheet { width: min(100%, 780px); min-height: 455px; margin: 0 auto; padding: clamp(18px, 3vw, 44px); border: 1px solid #dae3d9; border-radius: 12px; background:#fff; box-shadow: 0 3px 15px #17362b0b; }
+  .paper-sheet .doc-title { width: 100%; font-size: clamp(25px, 2.5vw, 36px); font-weight: 800; line-height: 1.31; letter-spacing: -.05em; color: #20352b; }
+  .paper-sheet textarea.doc-title, .paper-sheet textarea.doc-body { display:block; width:100%; padding: 4px 0; border:0; border-radius: 4px; resize: none; overflow-y: hidden; }
+  .paper-sheet textarea.doc-title { min-height: 53px; margin: 0 0 15px; }
+  .paper-sheet textarea.doc-body { min-height: 275px; color:#273b31; font-size: 16px; line-height: 1.88; word-break: keep-all; }
+  .paper-sheet textarea::placeholder { color:#697c70; opacity:1; }
+  .doc-label { display: block; margin-top: 11px; color: var(--muted); font-size: 12px; font-weight:750; }
+  .doc-rule { margin: 0 0 13px; border:none; border-top:1px solid var(--line); }
+  .doc-status { display: flex; align-items: center; min-height: 35px; gap: 8px; flex:none; padding: 5px 15px; border-top: 1px solid var(--line); background:#f9faf7; color:var(--muted); font-size: 12px; }
+  .doc-status span:last-child { margin-left: auto; white-space:nowrap; }
+  .reader-paper { padding: clamp(16px, 2.25vw, 33px); }
+  .reader-meta { margin-top: 7px; color: var(--muted); font-size:13px; }
+  .reader-list { display:grid; gap:3px; list-style:none; padding:0; margin: 19px -9px 0; }
+  .reader-paragraph { width:100%; display:block; text-align:left; padding:9px; border: 1px solid transparent; border-radius: 8px; background:white; }
+  .reader-paragraph:hover { background:#f4f8f2; }
+  .reader-paragraph[aria-pressed=true] { border-color:#9db9a6; background:#f2f7ef; box-shadow:inset 3px 0 0 var(--green); }
+  .paragraph-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:3px; font-size:12px; color:var(--muted); }
+  .paragraph-meta .pill { font-size: 11px; padding: 1px 6px; }
+  .reader-paragraph .paragraph-text { display:block; font-size: 15px; line-height: 1.78; white-space:pre-wrap; }
+  .review-mark { color:inherit; background: #f7edc7; border-radius:3px; padding: 1px 2px; box-decoration-break:clone; }
+  .inspect-content { display: grid; align-content:start; gap: 12px; padding: 15px 17px 20px; }
+  .inspect-block { display:grid; gap: 8px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 10px; background:white; }
+  .inspect-block h3 { line-height: 1.35; }
+  .inspect-block p { font-size:14px; }
+  .inspect-block .pill { font-size: 12px; }
+  .inspect-block.tint { background: #f0f6ef; border-color:#d6e4d5; }
+  .inspect-block dl { display:grid; gap:8px; }
+  .inspect-block dt { color:var(--muted); font-size:12px; font-weight:730; }
+  .inspect-block dd { margin:1px 0 0; font-size:14px; white-space:pre-wrap; }
+  .inspect-block summary { min-height: 31px; padding:3px 0; cursor:pointer; color:var(--green); font-size:14px; font-weight: 730; }
+  .inspect-block .inspect-actions { display:flex; flex-wrap:wrap; gap: 6px; }
+  .inspect-block .inspect-actions .button { font-size:13px; }
+  .case-jump { display:flex; flex-wrap:wrap; gap:6px; }
+  .case-jump button { min-height:34px; padding: 4px 8px; border:1px solid var(--line); border-radius:7px; background:white; color:var(--green); font-size:12px; font-weight:720; }
+  .case-jump button[aria-pressed=true] { background:var(--sage); border-color:#b7cbb9; }
+  .student-pagination { display: flex; justify-content:space-between; gap: 6px; padding: 7px 12px; border-top:1px solid var(--line); background:#fff; flex:none; }
+  .student-pagination [aria-disabled=true] { color:#5f7065; opacity:.66; }
+  .student-pagination .icon-button { padding-inline: 5px; }
+  @media (max-width: 970px) {
+    .workbench-shell { height: calc(100dvh - 61px); min-height: 485px; }
+    .workbench-top { min-height: 69px; padding:8px 14px; gap:8px; }
+    .workbench-heading { gap: 4px; }
+    .workbench-heading .context { font-size:11px; }
+    .workbench-grid { display:flex; }
+    .pane { flex:1; }
+    .pane + .pane { border-left:0; }
+    .pane[data-pane-active=false] { display:none; }
+    .pane-navigation { display:grid; grid-template-columns: repeat(3,1fr); border-bottom:1px solid var(--line); background:white; flex:none; }
+    .pane-navigation button { min-height: 44px; padding: 6px; border:0; border-bottom:2px solid transparent; background:white; color:var(--muted); font-size:13px; font-weight:720; }
+    .pane-navigation button[aria-pressed=true] { border-bottom-color:var(--green); color:var(--green); background:#f1f6ee; }
+    .save-indicator { display:none; }
+    .pane-scroll { overscroll-behavior:contain; }
+    .paper-sheet { max-width: 690px; min-height: 370px; }
+  }
+  @media (max-width: 600px) {
+    .masthead-inner { min-height:61px; }
+    .workbench-top { padding-inline: 10px; }
+    .workbench-heading .context { max-width: 100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .workbench-heading h1 { font-size: 20px; }
+    .workbench-actions .button { min-height: 39px; padding:6px 9px; font-size:12px; }
+    .workbench-heading > .icon-button { padding-inline: 3px; }
+    .pane-head { min-height: 49px; padding-inline: 12px; }
+    .editor-tools { padding-inline: 7px; }
+    .paper-scroll { padding-top: 11px; }
+    .paper-sheet { min-height:350px; }
+    .paper-sheet textarea.doc-body { min-height:210px; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#workspace" data-skip>본문으로 건너뛰기</a>
+<header class="masthead" id="masthead"></header>
+<nav class="navigation" id="navigation" aria-label="주 메뉴"></nav>
+<main id="workspace" tabindex="-1"></main>
+<footer><span>문연 시안 · 예시 데이터</span><button class="text-link" type="button" data-action="reset">시안 초기화</button></footer>
+<script>
+'use strict';
+
+const storageKey = 'munyeon-workspace-prototype-20261120-v2';
+const previousStorageKey = 'munyeon-flow-prototype-20261120-v1';
+const sampleBody = '학생들은 AI를 과제의 어느 단계까지 활용할 수 있는지 판단하기 어렵다.\n\n과제를 아이디어 구상, 초안 작성, 최종 제출 단계로 나누고, 각 단계에서 허용되는 활용과 직접 수행할 일을 함께 안내한다.\n\n두 가지 안내 형식을 보여주고 학생이 필요한 기준을 찾는 데 걸리는 시간을 비교한다.';
+const sampleQuestion = '과제 단계별로 기준을 제시하면 어떤 점이 더 명확해질까요?';
+const sampleReply = '아이디어 구상, 초안 작성, 최종 제출로 나누고 각 단계에서 허용되는 활용을 한 줄로 적어보세요.';
+const sampleExplanation = '단계 구분은 참고했고, 각 단계의 구체적인 기준은 직접 수정해 작성했습니다.';
+const seeded = {
+  assignment: { course: '창의융합적디자인', section: '01분반', title: '디자인 문제 해결 보고서', due: '2026-11-24T23:59', prompt: '교내 학습 환경에서 겪는 문제를 관찰하고, 근거와 함께 해결안을 제안하세요.', allowed: '아이디어 구상, 초안 피드백', restricted: '제출문 대필, 인터뷰 근거 생성' },
+  draft: { title: '과제별 AI 활용 기준을 한눈에', body: sampleBody, file: '' },
+  report: { mode: '', paragraph: 1, explanation: sampleExplanation, manualExplanation: '', exchange: 0, connectionChecked: false },
+  chat: [{ question: '과제 공지에서 AI 활용 기준을 어떻게 보여줄까?', reply: sampleReply }],
+  submitted: null,
+  reviews: {},
+};
+const exampleSubmission = { id: 'sample', name: '박서준', title: '과제별 AI 활용 기준을 한눈에', body: sampleBody, file: '', assignmentTitle: seeded.assignment.title,
+  report: { ...seeded.report, ...seeded.chat[0], mode: 'shared', quote: '아이디어 구상, 초안 작성, 최종 제출 단계로 나누고', extra: {
+    paragraph: 2, quote: '필요한 기준을 찾는 데 걸리는 시간을 비교한다.', question: '과제 안내가 읽기 쉬운지 어떻게 확인할까?',
+    reply: '서로 다른 두 안내문을 보여주고 같은 조건을 찾아보게 해보세요. 발견까지 걸린 시간과 학생이 혼동한 기준을 함께 기록하면 좋아요.',
+    explanation: '시간을 비교하는 방법을 참고했고, 참여자와 과제 조건은 직접 정했습니다.',
+  } }, time: '2026-11-19T09:42:00.000Z' };
+const secondSubmission = { id: 'sample2', name: '정민서', title: '교내 학습 공간의 이용 안내 개선', body: '시험 기간에는 좌석을 찾는 학생이 늘지만, 공간별 운영 시간과 좌석 예약 방법이 여러 페이지에 흩어져 있다.\n\n안내문 첫 화면에 운영 시간과 예약 여부를 모으고, 자료의 갱신 날짜를 표시한다.\n\n학생이 필요한 공간을 한 번에 찾을 수 있는지 확인한다.', assignmentTitle: seeded.assignment.title, report: { mode: 'manual', explanation: '안내 항목을 정리하는 데 도움을 받았고, 현장에서 확인한 내용과 개선안은 직접 작성했습니다.' }, time: '2026-11-19T11:04:00.000Z' };
+
+const glyphs = {
+  arrow: '<path d="m13 6-6 6 6 6M7 12h12"/>', right: '<path d="m9 6 6 6-6 6"/>',
+  file: '<path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 0v5h5M8 12h7M8 16h7"/>',
+  list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  chat: '<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm3 5h8M8 13h5"/>',
+  check: '<path d="m5 12 4 4L19 6"/>', link: '<path d="m10 13 4-4m-7 8-1 1a3 3 0 0 1-4-4l4-4a3 3 0 0 1 4 0m4 4a3 3 0 0 0 4 0l4-4a3 3 0 0 0-4-4l-1 1"/>',
+  send: '<path d="M12 19V5m-6 6 6-6 6 6"/>', attach: '<path d="M5 16.5 15 6.5a3 3 0 0 1 4 4l-9 9a5 5 0 0 1-7-7l9-9m-5 12 8-8"/>',
+  users: '<circle cx="9" cy="7" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m2-16a3 3 0 0 1 0 6m4 10v-2a4 4 0 0 0-4-4"/>',
+  star: '<path d="M12 2 9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2Z"/>',
+};
+function icon(name, small = false) {
+  return `<svg class="icon${small ? ' small-icon' : ''}" viewBox="0 0 24 24" aria-hidden="true">${glyphs[name]}</svg>`;
+}
+
+let state = freshState();
+let filter = { status: 'all', query: '' };
+let policyDraft = null;
+let current = null;
+let notice = '';
+let canStore = true;
+let hasSaved = false;
+let studentPane = 'editor';
+let teacherPane = 'document';
+let chatContext = '';
+const reviewPositions = new Map();
+try {
+  const saved = localStorage.getItem(storageKey) || localStorage.getItem(previousStorageKey);
+  if (saved) {
+    state = JSON.parse(saved);
+    localStorage.setItem(storageKey, saved);
+    hasSaved = true;
+  }
+} catch { canStore = false; }
+
+const workspace = document.getElementById('workspace');
+const masthead = document.getElementById('masthead');
+const navigation = document.getElementById('navigation');
+
+function freshState() { return JSON.parse(JSON.stringify(seeded)); }
+function save() {
+  try { localStorage.setItem(storageKey, JSON.stringify(state)); canStore = hasSaved = true; }
+  catch { canStore = false; }
+}
+function esc(value = '') {
+  const escapes = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return String(value ?? '').replace(/[&<>"']/g, character => escapes[character]);
+}
+function href(key, student = null) { return '#' + key + (student ? '/' + student : ''); }
+function go(key, student = null) {
+  const next = href(key, student);
+  if (location.hash === next) render();
+  else location.hash = next;
+}
+function link(key, label, { student = null, secondary = false, compact = false } = {}) {
+  return `<a class="button${secondary ? ' secondary' : ''}${compact ? ' compact' : ''}" href="${href(key, student)}">${esc(label)}</a>`;
+}
+function button(label, { secondary = false, action = '', compact = false } = {}) {
+  return `<button class="button${secondary ? ' secondary' : ''}${compact ? ' compact' : ''}" type="${action ? 'button' : 'submit'}"${action ? ` data-action="${action}"` : ''}>${esc(label)}</button>`;
+}
+function back(key, label, student = null) { return `<a class="trail" href="${href(key, student)}">← ${esc(label)}</a>`; }
+function intro(title, subtitle = '', context = '') {
+  return `<header class="intro">${context ? `<p class="context">${esc(context)}</p>` : ''}<h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${subtitle ? `<p class="subtitle">${esc(subtitle)}</p>` : ''}</header>`;
+}
+function pill(label, tone = '') { return `<span class="pill${tone ? ' ' + tone : ''}">${esc(label)}</span>`; }
+function details(entries) {
+  return `<dl class="details">${entries.map(([label, value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd></div>`).join('')}</dl>`;
+}
+function studentContext() { return `${state.assignment.course} · ${state.assignment.title}`; }
+function rules() {
+  return `<ul class="rule-list"><li>${pill('허용')}<span>${esc(state.assignment.allowed || '지정된 활용 없음')}</span></li><li>${pill('제한', 'amber')}<span>${esc(state.assignment.restricted || '별도 제한 없음')}</span></li></ul>`;
+}
+function step(number) {
+  return `<ol class="steps" aria-label="과제 제출 단계">${['과제 작성', 'AI 활용 확인', '제출 확인'].map((label, index) => `<li${index + 1 === number ? ' aria-current="step"' : ''}><b aria-hidden="true">${index + 1}</b>${label}</li>`).join('')}</ol>`;
+}
+function when(value) {
+  if (!value) return '미정';
+  const date = new Date(value);
+  const time = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  return time.format(typeof value === 'string' && value.length === 16 ? new Date(value + '+09:00') : date);
+}
+function paragraphs(body) { return body.trim().split(/\n[ \t]*\n+/).map(text => text.trim()).filter(Boolean); }
+function selectedParagraph(body, index) { return paragraphs(body)[index] || paragraphs(body)[0] || ''; }
+function savedLabel() { return canStore ? hasSaved ? '초안 저장됨' : '편집하면 자동 저장' : '브라우저 저장 불가'; }
+
+function studentHome() {
+  const { assignment, submitted } = state;
+  return intro('내 과제', '', assignment.course) + `<ul class="assignment-list"><li class="card row adapt"><div class="stack" style="gap:7px"><div class="tags">${pill(submitted ? '제출 완료' : '작성 중', submitted ? '' : 'neutral')}</div><h2>${esc(assignment.title)}</h2><p class="muted small">마감 ${esc(when(assignment.due))}</p></div><div class="tags">${link('s-assignment', '과제 안내', { secondary: true })}${link(submitted ? 's-receipt' : 's-write', submitted ? '제출 내역 보기' : '작업실 열기')}</div></li></ul>`;
+}
+
+function assignmentView() {
+  const { assignment, submitted } = state;
+  return back('s-home', '내 과제') + intro(assignment.title, '', assignment.course) + `<div class="assignment-meta"><span>마감 ${esc(when(assignment.due))}</span>${pill(submitted ? '제출 완료' : '작성 중', submitted ? '' : 'neutral')}</div><div class="stack">
+    <section class="card"><h2>과제 안내</h2><p>${esc(assignment.prompt)}</p></section>
+    <section class="card tint"><h2>이 과제의 AI 활용 기준</h2>${rules()}<div class="material"><a class="text-link" href="#s-chat">AI 대화 열기</a></div></section>
+    </div><div class="actions end">${link(submitted ? 's-receipt' : 's-write', submitted ? '제출 내역 보기' : '과제 이어서 작성')}</div>`;
+}
+
+function workspaceHeader(title, context, backKey, backLabel, actions) {
+  return `<header class="workbench-top"><div class="workbench-heading"><a class="icon-button" href="${href(backKey)}" aria-label="${backLabel}" title="${backLabel}">${icon('arrow')}</a><div><p class="context">${esc(context)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1></div></div><div class="workbench-actions">${actions}</div></header>`;
+}
+function panes(labels, active) {
+  return `<nav class="pane-navigation" aria-label="작업 화면 선택">${labels.map(([key, label]) => `<button type="button" data-action="change-pane" data-pane-target="${key}" aria-controls="pane-${key}" aria-pressed="${key === active}">${label}</button>`).join('')}</nav>`;
+}
+function pane(key, active, className, title, iconName, body, aside = '') {
+  return `<section class="pane ${className}" id="pane-${key}" data-pane="${key}" data-pane-active="${key === active}" aria-labelledby="label-${key}"><header class="pane-head"><h2 id="label-${key}">${icon(iconName)}${title}</h2>${aside}</header>${body}</section>`;
+}
+function chatTurns() {
+  return state.chat.map((entry, index) => {
+    const tagged = state.report.mode === 'shared' && state.report.exchange === index;
+    return `<li class="chat-turn"><div class="chat-message mine"><strong>나</strong>${esc(entry.question)}${entry.context ? `<p class="chat-context">편집기에서 첨부 · ${esc(entry.context)}</p>` : ''}</div><div class="chat-message ai"><strong>${icon('star', true)}과제 AI</strong>${esc(entry.reply)}</div>${state.submitted ? '' : `<div class="chat-select"><button type="button" class="icon-button" data-action="select-exchange" data-index="${index}" aria-pressed="${tagged}">${icon(tagged ? 'check' : 'link', true)}${tagged ? '활용 사례로 표시됨' : '활용 사례로 표시'}</button></div>`}</li>`;
+  }).join('');
+}
+function chatPanel() {
+  const composer = state.submitted ? '<p class="chat-compose hint">제출한 과제의 대화는 열람할 수 있어요.</p>' : `<div class="chat-compose"><div class="prompt-list"><button type="button" data-action="chat-prompt" data-prompt="이 과제에서 근거는 어떻게 수집하면 좋을까?">근거 찾기</button><button type="button" data-action="chat-prompt" data-prompt="초안을 검토할 때 무엇을 확인하면 좋을까?">초안 점검</button></div><div id="chat-context" class="context-chip"${chatContext ? '' : ' hidden'}><span>선택 문장 · ${esc(chatContext)}</span><button type="button" data-action="clear-context" aria-label="선택 문장 첨부 제거">×</button></div><form class="composer" data-form="chat"><input aria-label="AI에게 질문" name="question" placeholder="과제에 대해 질문하기" maxlength="400" required><button type="submit" class="button" aria-label="질문 보내기" title="질문 보내기">${icon('send')}</button></form><p class="hint" id="chat-status" role="status">표시한 사례는 제출 전에 확인할 수 있어요.</p></div>`;
+  return pane('chat', studentPane, 'chat-pane', '과제 AI', 'chat', `<div class="pane-scroll chat-body" id="chat-scroll"><details class="chat-rules disclosure" open><summary>이 과제의 AI 활용 기준</summary>${rules()}</details><ol class="chat-stream" id="chat-stream">${chatTurns()}</ol></div>${composer}`, '<span class="meta">예시 응답</span>');
+}
+function editorPanel() {
+  const draft = state.submitted || state.draft;
+  const readOnly = Boolean(state.submitted);
+  const content = `<article class="paper-sheet"><span class="doc-label">제출물 제목</span><textarea class="doc-title" id="doc-title" aria-label="제출물 제목" name="title" rows="1" maxlength="160" placeholder="제출물 제목을 입력하세요" required${readOnly ? ' readonly' : ''}>${esc(draft.title)}</textarea><hr class="doc-rule"><span class="doc-label">본문</span><textarea class="doc-body" id="doc-body" aria-label="본문" name="body" rows="7" maxlength="16000" placeholder="본문을 입력하세요. 새 문단은 한 줄을 비워 구분할 수 있어요." required${readOnly ? ' readonly' : ''}>${esc(draft.body)}</textarea></article>`;
+  const toolbar = readOnly ? '' : `<div class="editor-tools"><button class="icon-button" type="button" data-action="ask-selection">${icon('chat', true)}선택한 문장 질문</button><button class="icon-button" type="button" data-action="import-text">${icon('attach', true)}.txt 불러오기</button><input type="file" id="draft-file" aria-label="텍스트 파일" accept=".txt,text/plain" hidden></div>`;
+  return pane('editor', studentPane, 'editor-pane', '문서 편집기', 'file', `<form id="draft-form" class="editor-form" data-form="write">${toolbar}<div class="pane-scroll paper-scroll">${content}</div><div class="doc-status"><span id="file-status" role="status">${esc(draft.file)}</span><span id="doc-count">${draft.body.length.toLocaleString('ko-KR')}자</span></div></form>`);
+}
+function studentWrite() {
+  const { assignment, submitted } = state;
+  const actions = submitted ? link('s-receipt', '제출 내역', { compact: true }) : `<span class="save-indicator">${icon('check', true)}<span id="draft-status" role="status">${esc(savedLabel())}</span></span><button class="button compact" type="submit" form="draft-form" data-workbench-submit>제출 준비</button>`;
+  const railBody = `<div class="pane-scroll rail-content"><div class="stack" style="gap:8px"><p class="course-name">${esc(assignment.course)}</p><button class="rail-link" type="button" aria-current="page" data-action="open-editor">${icon('file', true)}<span><strong>${esc(submitted?.assignmentTitle || assignment.title)}</strong><small>${submitted ? '제출 완료' : `마감 ${esc(when(assignment.due))}`}</small></span></button></div><a class="icon-button bordered" href="${href('s-assignment')}">${icon('list', true)}과제 안내</a></div>`;
+  return `<div class="workbench-shell">${workspaceHeader(submitted?.assignmentTitle || assignment.title, `${assignment.course} · ${assignment.section}`, 's-home', '내 과제로', actions)}${panes([['assignments','과제'],['chat','AI 대화'],['editor','편집기']], studentPane)}<div class="workbench-grid student-grid">${pane('assignments', studentPane, 'rail', '내 과제', 'list', railBody)}${chatPanel()}${editorPanel()}</div></div>`;
+}
+
+function studentReport() {
+  const mode = state.report.mode;
+  const selected = state.chat[state.report.exchange];
+  return back('s-write', '과제 작성') + step(2) + intro('AI 활용 확인', '이 과제에서 AI 도움을 어떻게 활용했는지 선택하세요.', studentContext()) + `<form data-form="report">
+    <section class="card stack"><fieldset><legend>활용 방식</legend>
+      <label class="choice"><input type="radio" name="mode" value="shared" required ${mode === 'shared' ? 'checked' : ''}> 문연 대화 사례 연결</label>
+      <label class="choice"><input type="radio" name="mode" value="manual" ${mode === 'manual' ? 'checked' : ''}> 활용 내용 직접 입력</label>
+      <label class="choice"><input type="radio" name="mode" value="none" ${mode === 'none' ? 'checked' : ''}> AI를 사용하지 않음</label>
+    </fieldset>
+    ${mode === 'shared' ? `<div class="material"><h3>선택한 대화</h3><p class="muted">${esc(selected?.question || '연결된 대화가 없습니다.')}</p><a class="text-link" href="#s-evidence">대화와 연결할 문단 ${state.report.connectionChecked ? '수정' : '확인'}</a></div>` : ''}
+    ${mode === 'manual' ? `<div class="fields"><label>내가 받은 도움과 직접 한 판단<textarea name="explanation" rows="4" maxlength="1500" required placeholder="예: 아이디어를 정리할 때 사용했고, 최종 기준은 직접 선택했습니다.">${esc(state.report.manualExplanation)}</textarea></label></div>` : ''}
+    </section><div class="actions end">${button(mode === 'shared' && !state.report.connectionChecked ? '활용 사례 연결로' : '제출 확인으로')}</div></form>`;
+}
+
+function studentEvidence() {
+  return back('s-report', 'AI 활용 확인') + intro('활용 사례 연결', '대화 한 건을 과제의 관련 문단에 연결하세요.', studentContext()) + `<form data-form="evidence">
+    <section class="card fields">
+      <label>공유할 대화<select name="exchange">${state.chat.map((entry, index) => `<option value="${index}"${index === state.report.exchange ? ' selected' : ''}>${esc(entry.question)}</option>`).join('')}</select></label>
+      <div id="exchange-preview" class="notice">${esc(state.chat[state.report.exchange]?.reply)}</div>
+      <label>연결할 문단<select name="paragraph">${paragraphs(state.draft.body).map((paragraph, index) => `<option value="${index}"${index === state.report.paragraph ? ' selected' : ''}>문단 ${index + 1} · ${esc(paragraph.slice(0, 38))}</option>`).join('')}</select></label>
+      <label>나의 활용 설명<textarea name="explanation" rows="3" maxlength="1500" required>${esc(state.report.explanation)}</textarea></label>
+    </section><div class="actions end">${button('연결 저장 후 제출 확인')}</div></form>`;
+}
+
+function reportSummary(report) {
+  if (report.mode === 'none') return '<p>AI를 사용하지 않음 · 학생 확인</p>';
+  if (report.mode === 'manual') return `<p class="plain-text">${esc(report.explanation)}</p>`;
+  return `<p>문단 ${report.paragraph + 1}에 연결한 대화 1건</p><dl class="details"><div><dt>학생 질문</dt><dd>${esc(report.question)}</dd></div><div><dt>AI 답변</dt><dd>${esc(report.reply)}</dd></div><div><dt>활용 설명</dt><dd>${esc(report.explanation)}</dd></div></dl>`;
+}
+
+function currentReport() {
+  const { mode, paragraph, explanation, exchange } = state.report;
+  if (mode === 'shared') {
+    const { question, reply } = state.chat[exchange];
+    return { mode, paragraph, explanation, question, reply };
+  }
+  if (mode === 'manual') return { mode, explanation: state.report.manualExplanation };
+  return { mode: 'none' };
+}
+
+function studentConfirm() {
+  return back('s-report', 'AI 활용 확인') + step(3) + intro('제출 내용 확인', '아래 과제와 AI 활용 확인 내용이 교수자에게 전달됩니다.', studentContext()) + `<form data-form="submit">
+    <div class="stack"><section class="card"><div class="row adapt"><h2>과제 본문</h2><a class="text-link" href="#s-write">과제 수정</a></div><p><strong>${esc(state.draft.title)}</strong></p><details class="disclosure material"><summary>본문 미리 보기</summary><p class="plain-text">${esc(state.draft.body)}</p></details></section>
+    <section class="card"><div class="row adapt"><h2>교수자에게 전달되는 AI 활용 내용</h2><a class="text-link" href="#s-report">활용 내용 수정</a></div>${reportSummary(currentReport())}</section>
+    <p class="notice warn">제출 후에는 내용을 수정할 수 없어요.</p></div><div class="actions end">${button('과제 최종 제출')}</div></form>`;
+}
+
+function studentReceipt() {
+  const submission = state.submitted;
+  return back('s-home', '내 과제') + intro('제출 완료', '', `${state.assignment.course} · ${submission.assignmentTitle}`) + `<section class="card receipt"><div class="check" aria-hidden="true">✓</div><h2>${esc(submission.title)}</h2>${details([['제출 시각', when(submission.time)], ['제출 상태', '제출 완료']])}<details class="disclosure material"><summary>제출한 본문과 AI 활용 내용 보기</summary><p class="plain-text">${esc(submission.body)}</p><section class="material"><h3>AI 활용 내용</h3>${reportSummary(submission.report)}</section></details></section><div class="actions end">${link('s-home', '내 과제로 돌아가기', { secondary: true })}</div>`;
+}
+
+function reviewFor(id) { return state.reviews[id] || { paragraph: 0, question: '', score: null }; }
+function submissionFor(id) { return id === 'sample' ? exampleSubmission : id === 'sample2' ? secondSubmission : id === 'self' ? state.submitted : null; }
+function progressFor(submission) {
+  if (!submission) return '미제출';
+  const review = reviewFor(submission.id);
+  if (review.score) return '평가 완료';
+  if (review.question) return '질문 준비 완료';
+  return '검토 대기';
+}
+function rosterItems() {
+  return [
+    { name: '김하윤', submission: state.submitted },
+    { name: '박서준', submission: exampleSubmission },
+    { name: '정민서', submission: secondSubmission },
+    { name: '이수빈', submission: null },
+  ];
+}
+function matchingStudents() {
+  return rosterItems().filter(({ name, submission }) => name.includes(filter.query.trim()) && (filter.status === 'all' || progressFor(submission) === filter.status));
+}
+function rosterMarkup() {
+  const rows = matchingStudents();
+  if (!rows.length) return '<p class="muted material">조건에 맞는 학생이 없어요.</p>';
+  return `<ul class="roster">${rows.map(({ name, submission }) => {
+    const status = progressFor(submission);
+    return `<li><div><strong>${name}</strong>${submission ? `<p class="small muted">${esc(when(submission.time))} 제출</p>` : ''}</div>${pill(status, status === '미제출' ? 'neutral' : status === '검토 대기' ? 'amber' : '')}<div>${submission ? link('t-read', '검토하기', { student: submission.id, secondary: true, compact: true }) : '<span class="small muted">제출물 없음</span>'}</div></li>`;
+  }).join('')}</ul>`;
+}
+function rosterFilters() {
+  return `<label class="field">학생 검색<input id="roster-query" type="search" value="${esc(filter.query)}" placeholder="이름으로 검색"></label><label class="field">검토 상태<select name="status" id="roster-status">${[['all', '전체'], ['검토 대기', '검토 대기'], ['질문 준비 완료', '질문 준비 완료'], ['평가 완료', '평가 완료'], ['미제출', '미제출']].map(([value, label]) => `<option value="${value}"${filter.status === value ? ' selected' : ''}>${label}</option>`).join('')}</select></label>`;
+}
+function teacherRoster() {
+  const ready = rosterItems().filter(({ submission }) => submission).length;
+  return intro('학생 제출 현황', `제출 ${ready}명 · 미제출 ${rosterItems().length - ready}명`, `${state.assignment.course} · ${state.assignment.section} · ${state.assignment.title}`) + `<section class="card">
+    <div class="filters">${rosterFilters()}</div>
+    <div id="roster-results" aria-live="polite">${rosterMarkup()}</div></section>`;
+}
+function tabs(active, id) {
+  const routes = [['t-read', '제출물 검토'], ['t-question', '구술 질문'], ['t-score', '구술평가']];
+  return `<nav class="work-tabs" aria-label="학생 검토 메뉴">${routes.map(([key, label]) => `<a href="${href(key, id)}"${key === active ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
+}
+function teacherIntro(submission, title, view, subtitle = '') {
+  return back('t-roster', '학생 제출 현황') + intro(title, subtitle, `${submission.name} · ${submission.assignmentTitle}`) + tabs(view, submission.id);
+}
+function reviewCases(submission) {
+  const report = submission.report;
+  if (report.mode !== 'shared') return [];
+  return [report, report.extra].filter(Boolean);
+}
+function markedPassage(paragraph, proof) {
+  if (!proof) return esc(paragraph);
+  const index = proof.quote ? paragraph.indexOf(proof.quote) : -1;
+  if (index < 0) return `<mark class="review-mark">${esc(paragraph)}</mark>`;
+  const end = index + proof.quote.length;
+  return `${esc(paragraph.slice(0, index))}<mark class="review-mark">${esc(paragraph.slice(index, end))}</mark>${esc(paragraph.slice(end))}`;
+}
+function sidebarStudents(active) {
+  const rows = matchingStudents();
+  if (!rows.length) return '<p class="muted small">조건에 맞는 학생이 없어요.</p>';
+  return `<ul class="rail-roster">${rows.map(({ name, submission }) => {
+    const body = `<span class="initial" aria-hidden="true">${name[0]}</span><span><strong>${esc(name)}</strong><small>${progressFor(submission)}</small></span>`;
+    return `<li>${submission ? `<a class="roster-person" href="${href('t-read', submission.id)}" data-open-student="${submission.id}"${active === submission.id ? ' aria-current="page"' : ''}>${body}</a>` : `<div class="roster-person is-muted">${body}</div>`}</li>`;
+  }).join('')}</ul>`;
+}
+function studentPagination(id) {
+  const ids = rosterItems().flatMap(({ submission }) => submission ? [submission.id] : []);
+  const index = ids.indexOf(id);
+  return `<nav class="student-pagination" aria-label="제출 학생 이동">${[[ids[index - 1], '이전 학생', 'arrow'], [ids[index + 1], '다음 학생', 'right']].map(([target, label, direction]) => target ? `<a class="icon-button" href="${href('t-read', target)}">${icon(direction, true)}${label}</a>` : `<span class="icon-button" aria-disabled="true">${icon(direction, true)}${label}</span>`).join('')}</nav>`;
+}
+function questionCandidate(submission, index) {
+  if (submission.id === 'sample' && index === 1) return '허용·제한을 한 번에 제시하는 대신 단계별로 나눈 이유는 무엇인가요?';
+  if (submission.id === 'sample' && index === 2) return '안내를 찾는 시간은 줄었지만 잘못 읽는 학생이 늘면 어느 형식을 선택하겠어요?';
+  return '이 문단에서 가장 중요하게 판단한 점은 무엇인가요? 조건이 달라지면 그 판단도 바뀔까요?';
+}
+function inspectorContent(submission, index) {
+  const cases = reviewCases(submission);
+  const proof = cases.find(item => item.paragraph === index);
+  const chooser = cases.length > 0 ? `<nav class="case-jump" aria-label="근거가 연결된 문단">${cases.map(item => `<button type="button" data-action="jump-proof" data-index="${item.paragraph}" aria-pressed="${index === item.paragraph}">문단 ${item.paragraph + 1} 근거</button>`).join('')}</nav>` : '';
+  const source = proof
+    ? `<section class="inspect-block"><div class="row"><h3>문단 ${index + 1}의 공유 기록</h3>${pill('학생 직접 연결')}</div><dl><div><dt>학생 질문</dt><dd>${esc(proof.question)}</dd></div><div><dt>AI 답변</dt><dd>${esc(proof.reply)}</dd></div></dl></section><section class="inspect-block tint"><h3>학생의 활용 설명</h3><p class="plain-text">${esc(proof.explanation)}</p></section>`
+    : `<section class="inspect-block"><h3>${submission.report.mode === 'manual' ? '학생이 작성한 활용 설명' : `문단 ${index + 1}`}</h3>${submission.report.mode === 'manual' ? `<p class="plain-text">${esc(submission.report.explanation)}</p>` : `<p class="muted">${submission.report.mode === 'none' ? '학생이 AI를 사용하지 않았다고 확인했어요.' : '이 문단에 학생이 연결한 대화가 없어요.'}</p>`}</section>`;
+  const review = reviewFor(submission.id);
+  return `${chooser}${source}<section class="inspect-block"><h3>구술 질문</h3>${review.question && review.paragraph === index ? `<p>${esc(review.question)}</p><a class="text-link" href="${href('t-question', submission.id)}">저장된 질문 편집</a>` : `<details class="disclosure"><summary>질문 후보 보기 · 예시</summary><p>${esc(questionCandidate(submission, index))}</p><div class="inspect-actions"><button class="icon-button" type="button" data-action="question-from-paragraph" data-index="${index}" data-use-candidate="true">이 후보로 시작</button></div></details>`}<div class="inspect-actions"><button class="button compact${review.question && review.paragraph === index ? ' secondary' : ''}" type="button" data-action="question-from-paragraph" data-index="${index}">${review.question && review.paragraph === index ? '근거 문단 확인' : '직접 질문 작성'}</button></div></section>`;
+}
+function teacherRead(submission) {
+  const { id, body } = submission;
+  const cases = reviewCases(submission);
+  const index = reviewPositions.get(id) ?? cases[0]?.paragraph ?? 0;
+  const railBody = `<div class="pane-scroll rail-content"><div><p class="course-name">${esc(state.assignment.course)} · ${esc(state.assignment.section)}</p><p class="course-name" style="margin-top:5px">${esc(submission.assignmentTitle)}</p></div><div class="rail-tools">${rosterFilters()}</div><div id="sidebar-roster" aria-live="polite">${sidebarStudents(id)}</div></div><div class="rail-foot"><a class="icon-button" href="${href('t-setup')}">${icon('list', true)}과제 설정</a></div>`;
+  const documentBody = `<div class="pane-scroll paper-scroll" id="reader-scroll"><article class="paper-sheet reader-paper"><h3 class="doc-title">${esc(submission.title)}</h3><p class="reader-meta">${esc(submission.name)} · ${esc(when(submission.time))} 제출</p><ol class="reader-list">${paragraphs(body).map((paragraph, position) => {
+    const proof = cases.find(item => item.paragraph === position);
+    return `<li><button type="button" class="reader-paragraph" data-action="inspect-paragraph" data-index="${position}" aria-pressed="${index === position}"><span class="paragraph-meta">문단 ${position + 1}${proof ? ` ${pill('연결 근거', 'amber')}` : ''}</span><span class="paragraph-text">${markedPassage(paragraph, proof)}</span></button></li>`;
+  }).join('')}</ol></article></div>${studentPagination(id)}`;
+  const actions = `${link('t-score', '구술평가', { student: id, secondary: true, compact: true })}`;
+  return `<div class="workbench-shell">${workspaceHeader('제출물 검토', `${submission.name} · ${submission.assignmentTitle}`, 't-roster', '학생 제출 현황', actions)}${panes([['roster','학생'],['document','제출물'],['proof','AI 활용 근거']], teacherPane)}<div class="workbench-grid teacher-grid">${pane('roster', teacherPane, 'rail', '학생 목록', 'users', railBody)}${pane('document', teacherPane, 'reader-pane', '최종 제출물', 'file', documentBody, pill(progressFor(submission), progressFor(submission) === '검토 대기' ? 'amber' : ''))}${pane('proof', teacherPane, 'inspector-pane', 'AI 활용 근거', 'link', `<div id="inspector" class="pane-scroll inspect-content" aria-live="polite">${inspectorContent(submission, index)}</div>`, `<span class="meta">공유 ${cases.length}건</span>`)}</div></div>`;
+}
+
+function teacherQuestion(submission) {
+  const { id, body } = submission;
+  const review = reviewFor(id);
+  const selected = pendingQuestion?.id === id ? pendingQuestion.index : review.paragraph;
+  const question = pendingQuestion?.id === id ? pendingQuestion.text ?? review.question : review.question;
+  return teacherIntro(submission, '구술 질문', 't-question') + `<form data-form="question"><div class="stack">
+    <section class="card fields"><label>근거 문단<select name="paragraph">${paragraphs(body).map((paragraph, index) => `<option value="${index}"${index === selected ? ' selected' : ''}>문단 ${index + 1} · ${esc(paragraph.slice(0, 38))}</option>`).join('')}</select></label>
+      <details class="disclosure" open><summary>선택 문단 보기</summary><p id="question-excerpt" class="excerpt">${esc(selectedParagraph(body, selected))}</p></details>
+      <label>학생에게 물을 질문<textarea name="question" rows="4" required maxlength="1200" placeholder="예: 이 기준을 선택한 이유는 무엇인가요?">${esc(question)}</textarea></label>
+      <button type="button" class="text-link" data-action="example-question">예시 질문 불러오기</button>
+    </section>${review.question ? `<p class="notice">${review.score ? '평가 완료' : '질문 준비 완료'}${review.score ? ' · 질문 또는 근거를 바꾸면 기존 평가가 초기화돼요.' : ''}</p>` : ''}
+    <p id="screen-status" class="notice" role="status"${notice ? '' : ' hidden'}>${esc(notice)}</p></div>
+    <div class="actions">${review.question ? link('t-score', '구술평가 열기', { student: id, secondary: true }) : '<span></span>'}${button('구술 질문 저장')}</div></form>`;
+}
+
+function teacherScore(submission) {
+  const { id } = submission;
+  const review = reviewFor(id);
+  const heading = teacherIntro(submission, '구술평가', 't-score');
+  if (!review.question) return heading + `<section class="card"><h2>저장된 구술 질문이 없어요</h2><p class="muted">질문을 준비하면 이 화면에서 평가를 기록할 수 있어요.</p></section><div class="actions end">${link('t-question', '구술 질문 작성', { student: id })}</div>`;
+  const criteria = [['reason', '선택의 근거'], ['transfer', '조건이 달라질 때의 판단']];
+  return heading + `<form data-form="score"><div class="stack"><section class="card"><h2>저장된 질문</h2><p>${esc(review.question)}</p></section>
+    <section class="card fields"><h2>평가 기록</h2>${criteria.map(([key, label]) => `<fieldset><legend>${label}</legend><div class="scores">${[0, 1, 2].map(value => `<label><input type="radio" name="${key}" value="${value}" required${review.score?.[key] === value ? ' checked' : ''}> ${value}점</label>`).join('')}</div></fieldset>`).join('')}
+    <label>평가 메모<textarea name="memo" rows="3" maxlength="2000">${esc(review.score?.memo)}</textarea></label></section>
+    ${review.score ? `<p class="notice" role="status">평가 저장 완료 · ${review.score.reason + review.score.transfer} / 4점</p>` : ''}</div>
+    <div class="actions">${link('t-roster', '학생 목록으로', { secondary: true })}${button('평가 저장')}</div></form>`;
+}
+
+function teacherSetup() {
+  const assignment = policyDraft || state.assignment;
+  return intro('과제 설정', '', state.assignment.course) + `<form data-form="setup"><section class="card fields">
+    <label>과제 제목<input name="title" maxlength="160" value="${esc(assignment.title)}" required></label>
+    <label>제출 마감 <span class="hint">한국 시간 기준</span><input type="datetime-local" name="due" value="${esc(assignment.due)}" required></label>
+    <label>과제 안내<textarea name="prompt" rows="5" maxlength="1600" required>${esc(assignment.prompt)}</textarea></label>
+    </section>${notice ? `<p class="notice material" role="status">${esc(notice)}</p>` : ''}<div class="actions end">${button('AI 활용 기준으로')}</div></form>`;
+}
+
+function teacherPolicy() {
+  const assignment = policyDraft || state.assignment;
+  return back('t-setup', '과제 설정') + intro('AI 활용 기준', '학생이 과제를 열면 이 기준이 표시돼요.', assignment.title) + `<form data-form="policy"><section class="card fields">
+    <label>허용하는 도움<textarea name="allowed" rows="3" maxlength="500">${esc(assignment.allowed)}</textarea></label>
+    <label>제한하는 도움<textarea name="restricted" rows="3" maxlength="500">${esc(assignment.restricted)}</textarea></label>
+    </section><div class="actions end">${button('시안에 과제 설정 저장')}</div></form>`;
+}
+
+const studentViews = {
+  's-home': studentHome,
+  's-assignment': assignmentView,
+  's-write': studentWrite,
+  's-report': studentReport,
+  's-evidence': studentEvidence,
+  's-confirm': studentConfirm,
+  's-receipt': studentReceipt,
+};
+const teacherViews = {
+  't-roster': teacherRoster,
+  't-read': teacherRead,
+  't-question': teacherQuestion,
+  't-score': teacherScore,
+  't-setup': teacherSetup,
+  't-policy': teacherPolicy,
+};
+const teacherReviewViews = new Set(['t-read', 't-question', 't-score']);
+const studentEditViews = new Set(['s-report', 's-evidence', 's-confirm']);
+let pendingQuestion = null;
+
+function resizeEditor(field) {
+  if (!field || !field.offsetWidth) return;
+  field.style.height = 'auto';
+  field.style.height = `${field.scrollHeight + 1}px`;
+}
+function resizeDocument() {
+  workspace.querySelectorAll('.paper-sheet textarea').forEach(resizeEditor);
+}
+function switchPane(name) {
+  if (current.key === 's-write') studentPane = name;
+  else if (current.key === 't-read') teacherPane = name;
+  workspace.querySelectorAll('[data-pane]').forEach(node => { node.dataset.paneActive = String(node.dataset.pane === name); });
+  workspace.querySelectorAll('[data-pane-target]').forEach(node => { node.setAttribute('aria-pressed', String(node.dataset.paneTarget === name)); });
+  if (name === 'editor') resizeDocument();
+}
+function pickParagraph(index, fromProof = false) {
+  const submission = submissionFor(current.id);
+  reviewPositions.set(submission.id, index);
+  const paragraphs = [...workspace.querySelectorAll('.reader-paragraph')];
+  paragraphs.forEach(node => node.setAttribute('aria-pressed', String(Number(node.dataset.index) === index)));
+  const inspector = document.getElementById('inspector');
+  inspector.innerHTML = inspectorContent(submission, index);
+  inspector.scrollTop = 0;
+  if (fromProof) {
+    paragraphs[index]?.scrollIntoView({ block: 'nearest' });
+    workspace.querySelector(`[data-action="jump-proof"][data-index="${index}"]`)?.focus({ preventScroll: true });
+  } else if (matchMedia('(max-width: 970px)').matches) {
+    switchPane('proof');
+    workspace.querySelector('[data-pane-target="proof"]').focus();
+  }
+}
+function refreshRoster() {
+  if (current.key === 't-roster') document.getElementById('roster-results').innerHTML = rosterMarkup();
+  if (current.key === 't-read') document.getElementById('sidebar-roster').innerHTML = sidebarStudents(current.id);
+}
+function refreshChat(scroll = false) {
+  const stream = document.getElementById('chat-stream');
+  if (!stream) return;
+  stream.innerHTML = chatTurns();
+  if (scroll) {
+    const box = document.getElementById('chat-scroll');
+    box.scrollTop = box.scrollHeight;
+  }
+}
+function reflectChatContext() {
+  const chip = document.getElementById('chat-context');
+  chip.hidden = !chatContext;
+  chip.querySelector('span').textContent = `선택 문장 · ${chatContext}`;
+}
+
+function render({ focus = true } = {}) {
+  let [key, id] = location.hash.slice(1).split('/');
+  if (key === 's-chat') { key = 's-write'; studentPane = 'chat'; }
+  if (key === 't-evidence' || key === 't-evidence-item') { key = 't-read'; teacherPane = 'proof'; }
+  if (!Object.hasOwn(studentViews, key) && !Object.hasOwn(teacherViews, key)) key = 's-write';
+  if (state.submitted && studentEditViews.has(key)) key = 's-receipt';
+  if (!state.submitted && key === 's-receipt') key = 's-home';
+  if (teacherReviewViews.has(key) && !submissionFor(id)) key = 't-roster';
+  if (['s-report', 's-evidence', 's-confirm'].includes(key) && !draftValid()) key = 's-write';
+  if (key === 's-confirm' && !reportValid()) key = 's-report';
+  if (!teacherReviewViews.has(key)) id = null;
+  const hash = href(key, id);
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+  const isTeacher = Object.hasOwn(teacherViews, key);
+  const inSetup = ['t-setup', 't-policy'].includes(key);
+  const changePage = current?.key !== key || current?.id !== id;
+  const isWorkbench = key === 's-write' || key === 't-read';
+  const teacherStart = href('t-read', state.submitted ? 'self' : 'sample');
+  current = { key, id };
+  masthead.innerHTML = `<div class="masthead-inner"><a class="brand" href="${isTeacher ? '#t-roster' : '#s-home'}"><span class="mark" aria-hidden="true">文</span><span><strong>문연</strong><small>과제 작업실</small></span></a><div class="demo"><span>시안 역할</span><nav class="switch" aria-label="시안 역할 전환"><a href="#s-write"${isTeacher ? '' : ' aria-current="page"'}>학생</a><a href="${teacherStart}"${isTeacher ? ' aria-current="page"' : ''}>교수자</a></nav></div></div>`;
+  navigation.innerHTML = `<div class="navigation-inner">${isTeacher ? `<a href="#t-roster"${inSetup ? '' : ' aria-current="page"'}>제출물 검토</a><a href="#t-setup"${inSetup ? ' aria-current="page"' : ''}>과제 설정</a>` : '<a href="#s-home" aria-current="page">내 과제</a>'}</div>`;
+  document.body.classList.toggle('in-workbench', isWorkbench);
+  workspace.className = isWorkbench ? 'workbench' : key === 't-roster' ? 'wide' : '';
+  workspace.innerHTML = (isTeacher ? teacherViews[key] : studentViews[key])(submissionFor(id));
+  pendingQuestion = null;
+  notice = '';
+  if (key === 's-write') resizeDocument();
+  if (focus && changePage) {
+    window.scrollTo(0, 0);
+    document.getElementById('screen-title').focus({ preventScroll: true });
+  }
+}
+
+function marked(form, label) {
+  const field = form.elements[label];
+  if (field.value.trim()) return true;
+  field.setCustomValidity('내용을 입력해 주세요.');
+  field.reportValidity();
+  return false;
+}
+function draftValid() { return Boolean(state.draft.title.trim() && state.draft.body.trim()); }
+function reportValid() {
+  const { mode, paragraph, exchange, manualExplanation, explanation, connectionChecked } = state.report;
+  if (mode === 'manual') return Boolean(manualExplanation.trim());
+  if (mode === 'shared') return Boolean(connectionChecked && state.chat[exchange] && paragraphs(state.draft.body)[paragraph] && explanation.trim());
+  return mode === 'none';
+}
+function applyDraftFields(form) {
+  if (state.draft.body !== form.elements.body.value) state.report.connectionChecked = false;
+  state.draft.title = form.elements.title.value;
+  state.draft.body = form.elements.body.value;
+  const last = Math.max(0, paragraphs(state.draft.body).length - 1);
+  state.report.paragraph = Math.min(state.report.paragraph, last);
+  save();
+  document.getElementById('doc-count').textContent = `${state.draft.body.length.toLocaleString('ko-KR')}자`;
+}
+
+workspace.addEventListener('submit', event => {
+  const form = event.target;
+  const action = form.dataset.form;
+  if (!action) return;
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(form));
+  switch (action) {
+    case 'write':
+      if (state.submitted) return;
+      if (!marked(form, 'title') || !marked(form, 'body')) return;
+      applyDraftFields(form);
+      go('s-report');
+      break;
+    case 'report':
+      if (values.mode === 'manual' && !marked(form, 'explanation')) return;
+      state.report.mode = values.mode;
+      if (values.mode === 'manual') state.report.manualExplanation = values.explanation.trim();
+      save();
+      go(reportValid() ? 's-confirm' : 's-evidence');
+      break;
+    case 'evidence':
+      if (!marked(form, 'explanation')) return;
+      Object.assign(state.report, { mode: 'shared', paragraph: Number(values.paragraph), exchange: Number(values.exchange), explanation: values.explanation.trim(), connectionChecked: true });
+      save();
+      go('s-confirm');
+      break;
+    case 'submit':
+      if (!state.submitted && draftValid() && reportValid()) {
+        state.submitted = { ...state.draft, id: 'self', name: '김하윤', time: new Date().toISOString(), assignmentTitle: state.assignment.title, report: currentReport() };
+        save();
+      }
+      go('s-receipt');
+      break;
+    case 'chat': {
+      if (!marked(form, 'question')) return;
+      const question = values.question.trim();
+      const reply = chatContext
+        ? '첨부한 문장에서 주장과 근거를 각각 짚어보세요. 독자가 확인할 수 있는 관찰이나 자료가 한 가지 붙으면 판단 과정이 더 분명해져요.'
+        : /초안|검토|점검/.test(question)
+          ? '문제 정의, 제안, 검증 방법이 서로 연결되는지 확인해 보세요. 해결안이 실제로 효과가 있는지 관찰할 기준도 하나 적어보면 좋아요.'
+          : '이미 관찰한 문제를 한 문장으로 적고, 그 문제를 확인할 자료를 하나 골라보세요. 사용자가 어떤 상황에서 어려움을 겪는지부터 기록하면 근거를 모으기 쉬워요.';
+      state.chat.push({ question, reply, context: chatContext });
+      save();
+      chatContext = '';
+      reflectChatContext();
+      refreshChat(true);
+      form.reset();
+      form.elements.question.focus({ preventScroll: true });
+      document.getElementById('chat-status').textContent = '예시 답변이 추가됐어요.';
+      document.getElementById('draft-status').textContent = savedLabel();
+      break;
+    }
+    case 'question': {
+      if (!marked(form, 'question')) return;
+      const previous = reviewFor(current.id);
+      const question = values.question.trim();
+      const paragraph = Number(values.paragraph);
+      const changed = previous.question !== question || previous.paragraph !== paragraph;
+      if (changed && previous.score && !window.confirm('질문 또는 근거가 바뀌면 기존 평가가 초기화돼요. 저장할까요?')) return;
+      state.reviews[current.id] = { paragraph, question, score: changed ? null : previous.score };
+      save();
+      notice = '구술 질문을 저장했어요.';
+      render({ focus: false });
+      document.getElementById('screen-status').setAttribute('tabindex', '-1');
+      document.getElementById('screen-status').focus();
+      break;
+    }
+    case 'score': {
+      const previous = reviewFor(current.id);
+      state.reviews[current.id] = { ...previous, score: { reason: Number(values.reason), transfer: Number(values.transfer), memo: values.memo.trim() } };
+      save();
+      render({ focus: false });
+      workspace.querySelector('[role="status"]').setAttribute('tabindex', '-1');
+      workspace.querySelector('[role="status"]').focus();
+      break;
+    }
+    case 'setup':
+      if (!marked(form, 'title') || !marked(form, 'prompt')) return;
+      policyDraft = { ...(policyDraft || state.assignment), title: values.title.trim(), due: values.due, prompt: values.prompt.trim() };
+      go('t-policy');
+      break;
+    case 'policy':
+      state.assignment = { ...(policyDraft || state.assignment), allowed: values.allowed.trim(), restricted: values.restricted.trim() };
+      policyDraft = null;
+      save();
+      notice = '과제 설정을 시안에 저장했어요.';
+      go('t-setup');
+      break;
+  }
+});
+
+let fileRead = 0;
+workspace.addEventListener('change', async event => {
+  const target = event.target;
+  if (target.name === 'mode' && target.form?.dataset.form === 'report') {
+    state.report.mode = target.value;
+    save();
+    render({ focus: false });
+    workspace.querySelector('input[name="mode"]:checked').focus({ preventScroll: true });
+  }
+  if (target.name === 'exchange' && current.key === 's-evidence') document.getElementById('exchange-preview').textContent = state.chat[Number(target.value)]?.reply || '';
+  if (target.name === 'paragraph' && current.key === 't-question') document.getElementById('question-excerpt').textContent = selectedParagraph(submissionFor(current.id).body, Number(target.value));
+  if (target.id === 'roster-status') { filter.status = target.value; refreshRoster(); }
+  if (target.id !== 'draft-file') return;
+  const file = target.files[0];
+  if (!file) return;
+  const status = document.getElementById('file-status');
+  const sequence = ++fileRead;
+  if (!file.name.toLowerCase().endsWith('.txt') || file.size > 64 * 1024) {
+    status.textContent = '64 KiB 이하의 .txt 파일을 선택해 주세요.';
+    return;
+  }
+  try {
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer());
+    if (sequence !== fileRead || !workspace.contains(target)) return;
+    if (!text.trim() || text.length > 16000) {
+      status.textContent = '본문이 비어 있거나 16,000자를 넘어요.';
+      return;
+    }
+    target.form.elements.body.value = text.replace(/\r\n?/g, '\n');
+    target.form.elements.body.setCustomValidity('');
+    state.draft.file = file.name;
+    applyDraftFields(target.form);
+    resizeDocument();
+    status.textContent = `${file.name} · 본문에 반영했어요.`;
+    document.getElementById('draft-status').textContent = savedLabel();
+  } catch {
+    if (workspace.contains(target)) status.textContent = '파일을 읽을 수 없어요. UTF-8로 저장한 .txt 파일을 선택해 주세요.';
+  }
+});
+
+workspace.addEventListener('input', event => {
+  const input = event.target;
+  if (input.setCustomValidity) input.setCustomValidity('');
+  if (input.form?.dataset.form === 'write' && ['title', 'body'].includes(input.name)) {
+    applyDraftFields(input.form);
+    resizeEditor(input);
+    document.getElementById('draft-status').textContent = savedLabel();
+  }
+  if (input.form?.dataset.form === 'report' && input.name === 'explanation') {
+    state.report.manualExplanation = input.value;
+    save();
+  }
+  if (input.id === 'roster-query') {
+    filter.query = input.value;
+    refreshRoster();
+  }
+});
+
+document.addEventListener('click', event => {
+  if (event.target.closest('[data-skip]')) {
+    event.preventDefault();
+    workspace.focus();
+    return;
+  }
+  if (event.target.closest('[data-workbench-submit]')) switchPane('editor');
+  const student = event.target.closest('[data-open-student]');
+  if (student) {
+    teacherPane = 'document';
+    if (student.dataset.openStudent === current.id) switchPane('document');
+  }
+  const control = event.target.closest('[data-action]');
+  if (!control) return;
+  switch (control.dataset.action) {
+    case 'reset':
+      if (!window.confirm('이 브라우저의 시안 입력과 제출 기록을 초기화할까요?')) return;
+      state = freshState();
+      policyDraft = null;
+      filter = { status: 'all', query: '' };
+      studentPane = 'editor';
+      teacherPane = 'document';
+      chatContext = '';
+      reviewPositions.clear();
+      save();
+      go('s-write');
+      break;
+    case 'change-pane':
+      switchPane(control.dataset.paneTarget);
+      break;
+    case 'open-editor':
+      switchPane('editor');
+      document.getElementById('doc-body').focus();
+      break;
+    case 'chat-prompt': {
+      const input = workspace.querySelector('.composer input');
+      input.value = control.dataset.prompt;
+      input.setCustomValidity('');
+      input.focus();
+      break;
+    }
+    case 'ask-selection': {
+      const editor = document.getElementById('doc-body');
+      const selection = editor.value.slice(editor.selectionStart, editor.selectionEnd).trim();
+      const status = document.getElementById('file-status');
+      if (!selection) {
+        status.textContent = '본문에서 질문할 문장을 먼저 선택하세요.';
+        editor.focus();
+        break;
+      }
+      status.textContent = '선택한 문장을 질문에 붙였어요.';
+      chatContext = selection.slice(0, 400);
+      switchPane('chat');
+      reflectChatContext();
+      const input = workspace.querySelector('.composer input');
+      if (!input.value.trim()) input.value = '이 문장의 주장과 근거를 점검해 줘.';
+      input.setCustomValidity('');
+      input.focus();
+      break;
+    }
+    case 'clear-context':
+      chatContext = '';
+      reflectChatContext();
+      workspace.querySelector('.composer input').focus();
+      break;
+    case 'import-text':
+      document.getElementById('draft-file').click();
+      break;
+    case 'select-exchange': {
+      const index = Number(control.dataset.index);
+      const unchanged = state.report.exchange === index;
+      const remove = state.report.mode === 'shared' && unchanged;
+      state.report.mode = remove ? '' : 'shared';
+      state.report.exchange = index;
+      if (!unchanged) state.report.explanation = '';
+      state.report.connectionChecked = false;
+      save();
+      refreshChat();
+      workspace.querySelector(`[data-action="select-exchange"][data-index="${index}"]`).focus({ preventScroll: true });
+      document.getElementById('chat-status').textContent = remove ? '활용 사례 표시를 해제했어요.' : '활용 사례로 표시했어요. 제출 준비에서 문단에 연결할 수 있어요.';
+      break;
+    }
+    case 'inspect-paragraph':
+      pickParagraph(Number(control.dataset.index));
+      break;
+    case 'jump-proof':
+      pickParagraph(Number(control.dataset.index), true);
+      break;
+    case 'question-from-paragraph': {
+      const index = Number(control.dataset.index);
+      const existing = reviewFor(current.id);
+      const text = control.dataset.useCandidate ? questionCandidate(submissionFor(current.id), index) : existing.paragraph === index ? existing.question : '';
+      pendingQuestion = { id: current.id, index, text };
+      go('t-question', current.id);
+      break;
+    }
+    case 'example-question': {
+      const textarea = workspace.querySelector('textarea[name="question"]');
+      if (textarea.value.trim() && !window.confirm('입력한 질문을 예시 질문으로 바꿀까요?')) return;
+      textarea.value = sampleQuestion;
+      textarea.setCustomValidity('');
+      textarea.focus();
+      break;
+    }
+  }
+});
+
+window.addEventListener('hashchange', () => render());
+window.addEventListener('resize', resizeDocument);
+render({ focus: false });
+</script>
+</body>
+</html>
