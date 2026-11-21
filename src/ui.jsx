@@ -1,4 +1,5 @@
-import { href } from './lib.js';
+import { useEffect, useRef } from 'react';
+import { ACTIVITIES, STAGES } from '../shared/text.js';
 
 const glyphs = {
   arrow: <path d="m13 6-6 6 6 6M7 12h12" />,
@@ -13,113 +14,115 @@ const glyphs = {
   users: <><circle cx="9" cy="7" r="3" /><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m2-16a3 3 0 0 1 0 6m4 10v-2a4 4 0 0 0-4-4" /></>,
   star: <path d="M12 2 9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5L12 2Z" />,
   alert: <path d="M12 8v5m0 3h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />,
+  panel: <path d="M4 5h16v14H4zM9 5v14" />,
+  download: <path d="M12 4v11m-5-5 5 5 5-5M5 20h14" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  gear: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M4.9 19.1 7 17m10-10 2.1-2.1" /></>,
+  flag: <path d="M5 21V4m0 0h11l-2 4 2 4H5" />,
+  trash: <path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13" />,
 };
 
 export function Icon({ name, small = false }) {
   return <svg className={'icon' + (small ? ' small-icon' : '')} viewBox="0 0 24 24" aria-hidden="true">{glyphs[name]}</svg>;
 }
-
 export function Pill({ children, tone = '' }) {
   return <span className={'pill' + (tone ? ' ' + tone : '')}>{children}</span>;
 }
-
 export function Brand({ to }) {
   return <a className="brand" href={to}><span className="mark" aria-hidden="true">文</span>
     <span><strong>문연</strong><small>과제 작업실</small></span></a>;
 }
-
-export function Masthead({ user, home, onLogout, busy }) {
+export function Masthead({ user, home, onLogout, busy, model }) {
   return <header className="masthead"><div className="masthead-inner">
     <Brand to={home} />
     <div className="account">
+      {model && <span className="model-badge" title="과제 AI 연결 상태">AI · {model}</span>}
       <span>{user.name} · {user.role === 'teacher' ? '교수자' : '학생'}</span>
       <button type="button" className="account-button" disabled={busy} onClick={onLogout}>로그아웃</button>
     </div>
   </div></header>;
 }
-
-export function Navigation({ items }) {
-  return <nav className="navigation" aria-label="주 메뉴"><div className="navigation-inner">
-    {items.map(([to, label, current]) => <a key={to} href={to} aria-current={current ? 'page' : undefined}>{label}</a>)}
-  </div></nav>;
-}
-
-export function Intro({ title, subtitle, context }) {
+export function Intro({ title, subtitle, context, children }) {
   return <header className="intro">
     {context && <p className="context">{context}</p>}
-    <h1 id="screen-title" tabIndex={-1}>{title}</h1>
+    <div className="intro-row"><h1 id="screen-title" tabIndex={-1}>{title}</h1>{children}</div>
     {subtitle && <p className="subtitle">{subtitle}</p>}
   </header>;
 }
-
-export function Trail({ to, children }) {
-  return <a className="trail" href={to}>← {children}</a>;
+export function Crumbs({ items }) {
+  return <nav className="crumbs" aria-label="현재 위치"><ol>
+    {items.map(([label, to], index) => <li key={index}>{to && index < items.length - 1 ? <a href={to}>{label}</a> : <span aria-current="page">{label}</span>}</li>)}
+  </ol></nav>;
 }
-
 export function Notice({ message, tone = '' }) {
   if (!message) return null;
   const text = typeof message === 'string' ? message : message.text;
   const error = typeof message === 'object' && message.error;
   return <p className={'notice' + (error ? ' error' : tone ? ' ' + tone : '')} role={error ? 'alert' : 'status'}>{text}</p>;
 }
-
-export function Rules({ assignment }) {
-  return <ul className="rule-list">
-    <li><Pill>허용</Pill><span>{assignment.allowed || '지정된 활용 없음'}</span></li>
-    <li><Pill tone="amber">제한</Pill><span>{assignment.restricted || '별도 제한 없음'}</span></li>
-  </ul>;
-}
-
-export function Steps({ current }) {
-  return <ol className="steps" aria-label="과제 제출 단계">
-    {['과제 작성', 'AI 활용 확인', '제출 확인'].map((label, index) =>
-      <li key={label} aria-current={index + 1 === current ? 'step' : undefined}><b aria-hidden="true">{index + 1}</b>{label}</li>)}
-  </ol>;
-}
-
 export function Details({ entries }) {
-  return <dl className="details">{entries.map(([label, value]) =>
-    <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;
+  return <dl className="details">{entries.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;
 }
-
 export function WorkbenchTop({ title, context, back, backLabel, children }) {
   return <header className="workbench-top">
     <div className="workbench-heading">
-      <a className="icon-button" href={back} aria-label={backLabel} title={backLabel}><Icon name="arrow" /></a>
+      {back && <a className="icon-button" href={back} aria-label={backLabel} title={backLabel}><Icon name="arrow" /></a>}
       <div><p className="context">{context}</p><h1 id="screen-title" tabIndex={-1}>{title}</h1></div>
     </div>
     <div className="workbench-actions">{children}</div>
   </header>;
 }
-
 export function PaneTabs({ items, active, onChange }) {
-  return <nav className="pane-navigation" aria-label="작업 화면 선택">
+  return <nav className="pane-navigation" style={{ gridTemplateColumns: `repeat(${items.length}, 1fr)` }} aria-label="작업 화면 선택">
     {items.map(([key, label]) => <button key={key} type="button" aria-controls={'pane-' + key}
       aria-pressed={key === active} onClick={() => onChange(key)}>{label}</button>)}
   </nav>;
 }
-
 export function Pane({ id, active, className, title, icon, aside, children }) {
   return <section className={'pane ' + className} id={'pane-' + id} data-pane-active={id === active} aria-labelledby={'label-' + id}>
     <header className="pane-head"><h2 id={'label-' + id}><Icon name={icon} />{title}</h2>{aside}</header>
     {children}
   </section>;
 }
-
-export function LinkButton({ to, id, children, secondary, compact }) {
-  return <a className={'button' + (secondary ? ' secondary' : '') + (compact ? ' compact' : '')} href={href(to, id)}>{children}</a>;
+export function Tabs({ items, active, onChange, label }) {
+  return <div className="tabs" role="tablist" aria-label={label}>
+    {items.map(([key, text]) => <button key={key} type="button" role="tab" aria-selected={key === active} onClick={() => onChange(key)}>{text}</button>)}
+  </div>;
 }
 
-export function ReportSummary({ report }) {
-  if (report.mode === 'none') return <p>AI를 사용하지 않았다고 확인함</p>;
-  if (report.mode === 'manual') return <p className="plain-text">{report.explanation}</p>;
-  if (report.mode === 'unreported') return <p className="muted">AI 활용 보고 없음 (이전 방식 제출)</p>;
-  return <>
-    <p>문단 {report.paragraph + 1}에 연결한 대화 1건</p>
-    <Details entries={[
-      ...(report.question ? [['학생 질문', report.question]] : []),
-      ['AI 답변', report.excerpt],
-      ['활용 설명', report.explanation],
-    ]} />
-  </>;
+export function StagePill({ stages, stage }) {
+  return <span className={'stage-pill stage-' + stage}>{stages?.[stage] ?? stage}</span>;
+}
+export function StageLegend({ stages }) {
+  return <ul className="stage-legend" aria-label="활용 단계 범례">
+    {STAGES.map(stage => <li key={stage}><mark className={'stage-mark stage-' + stage}>{stages[stage]}</mark></li>)}
+  </ul>;
+}
+export function RulesTable({ stages, rules, compact }) {
+  return <div className="table-scroll"><table className={'rules-table' + (compact ? ' compact' : '')}>
+    <thead><tr><th scope="col">도움 유형</th>{STAGES.map(stage => <th key={stage} scope="col">{stages[stage]}</th>)}</tr></thead>
+    <tbody>{Object.entries(ACTIVITIES).map(([activity, label]) => <tr key={activity}><th scope="row">{label}</th>
+      {STAGES.map(stage => <td key={stage}>{rules[stage]?.[activity] === 'restricted'
+        ? <span className="rule restricted">제한</span> : <span className="rule allowed">허용</span>}</td>)}</tr>)}</tbody>
+  </table></div>;
+}
+
+export function Dialog({ open, title, onClose, children, actions }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+  return <dialog ref={ref} className="dialog" onClose={onClose} aria-labelledby="dialog-title">
+    <header className="dialog-head"><h2 id="dialog-title">{title}</h2>
+      <button type="button" className="icon-button" aria-label="닫기" onClick={onClose}>×</button></header>
+    <div className="dialog-body">{children}</div>
+    {actions && <footer className="dialog-actions">{actions}</footer>}
+  </dialog>;
+}
+
+export function Empty({ title, children }) {
+  return <section className="card empty"><h2>{title}</h2>{children && <p className="muted">{children}</p>}</section>;
 }

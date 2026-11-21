@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { api } from './api.js';
-import { Brand, Masthead, Navigation, Notice } from './ui.jsx';
+import { Brand, Masthead, Notice } from './ui.jsx';
 
-export function Shell({ user, home, onLogout, nav, workbench, wide, children }) {
+export function Shell({ session, home, onLogout, workbench, wide, children }) {
   const [busy, setBusy] = useState(false);
   async function logout() {
     setBusy(true);
@@ -10,8 +10,7 @@ export function Shell({ user, home, onLogout, nav, workbench, wide, children }) 
   }
   return <>
     <button type="button" className="skip" onClick={() => document.getElementById('workspace').focus()}>본문으로 건너뛰기</button>
-    <Masthead user={user} home={home} onLogout={logout} busy={busy} />
-    {!workbench && <Navigation items={nav} />}
+    <Masthead user={session.user} model={session.model} home={home} onLogout={logout} busy={busy} />
     <main id="workspace" tabIndex={-1} className={workbench ? 'workbench' : wide ? 'wide' : ''}>{children}</main>
   </>;
 }
@@ -31,7 +30,8 @@ export function Login({ demo, onLogin }) {
       setBusy(false);
     }
   }
-  const accounts = [['교수자', 'teacher', 'munyeon-teacher'], ['학생', 'student', 'munyeon-student'], ['학생 2', 'student2', 'munyeon-student2']];
+  const accounts = [['교수자 · 창의융합적디자인', 'teacher'], ['교수자 · 디자인 리서치 방법', 'teacher2'],
+    ['학생 · 김하윤 (두 과목 수강)', 'student'], ['학생 · 박서준', 'student2'], ['학생 · 이유진 (미제출)', 'student3']];
   return <div className="login-page">
     <header className="masthead"><div className="masthead-inner"><Brand to="#/" /></div></header>
     <main id="workspace" className="login-main">
@@ -48,9 +48,9 @@ export function Login({ demo, onLogin }) {
         </form>
         <p className="hint login-help">계정은 담당 교수자나 운영자가 발급해요.</p>
         {demo && <details className="disclosure material"><summary>로컬 체험 계정</summary>
-          <ul className="demo-accounts">{accounts.map(([label, username, password]) => <li key={username}>
+          <ul className="demo-accounts">{accounts.map(([label, username]) => <li key={username}>
             <span><strong>{label}</strong> <code>{username}</code></span>
-            <button type="button" className="text-link" onClick={() => setValues({ username, password })}>이 계정으로 채우기</button>
+            <button type="button" className="text-link" onClick={() => setValues({ username, password: 'munyeon-' + username })}>채우기</button>
           </li>)}</ul>
         </details>}
       </section>
