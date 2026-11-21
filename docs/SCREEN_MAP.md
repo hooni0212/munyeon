@@ -1,6 +1,6 @@
 # 문연 화면 지도와 상태 목록
 
-2026-11-21 · 기능 구현 전 정보 구조 확정용
+2026-11-21 · 정보 구조 확정 및 구현 기준 (구현 완료 상태는 [프로젝트 현황](PROJECT_STATUS.md) 참고)
 
 [MVP 백엔드 명세](MVP_BACKEND_SPEC.md)와 2026-11-21 팀 피드백 9개를 합쳐 역할별 화면, 이동 경로, 화면 상태를 정리한다. 이 문서의 목적은 시각 디자인이 아니라 **어떤 화면이 있고 무엇을 담는지**를 고정하는 것이다. 색·여백·문구 다듬기는 기능 구현 뒤 UX 단계에서 한다.
 
@@ -44,7 +44,7 @@
             └─ 제출 완료 후 마감 전이면 → 작업실로 돌아가 수정 → 다시 제출
 ```
 
-별도 "내 과제" 홈은 모바일과 과제가 없는 경우에만 쓴다. 데스크톱에서는 사이드바가 홈 역할을 한다.
+"내 과제" 목록(`#/list`)은 모바일과 과제가 없는 경우의 진입점이다. 데스크톱 첫 화면은 마감이 가장 가까운 진행 중 과제의 작업실이고, 사이드바가 목록 역할을 한다.
 
 ### 2.2 작업실
 
@@ -135,12 +135,12 @@
 | --- | --- |
 | `course_sections` | `courseId`, 분반 이름. `course_enrollments`에 `sectionId` 추가 |
 | `assignment_sections` | 과제와 대상 분반 다대다 |
-| `files` | 업로드 원본. 파일은 `data/uploads/`에 저장하고 DB에는 경로·형식·크기·해시만 둔다. 백업 대상에 포함. 크기 한도 10 MB 제안 |
+| `files` | 업로드 원본과 추출 텍스트. SQLite에 함께 저장해 기존 백업·복구에 포함한다. 크기 한도 10 MB |
 | `draft_versions` | `sourceFileId`, `editedAfterUpload` 추가 |
-| `report_items` | `stage`, `start`, `end`, `quote` 추가. 위치 상태 `ok/needs_relocation` |
+| 활용 기록 | 초안에 `stage`, `start`, `end`, `quote`, `turnIds`, `usage`, `explanation`, 위치 상태 `ok/lost/unanchored`로 저장하고 제출 시 대화 원문과 함께 회차에 고정 |
 | `submissions` → `submission_versions` | 과제·학생당 제출 한 건 + 회차별 고정본. 마감 전 재제출 허용 |
 | `verification_questions` | 제출 회차 ID 저장. 최신 회차가 아니면 `이전 회차 기준` 표시 |
-| 업로드 API | `POST /assignments/{id}/draft/import` (multipart) → 변환 텍스트 미리 보기 반환, `GET /files/{fileId}` 권한 검사 후 원본 다운로드 |
+| 업로드 API | `POST /assignments/{id}/draft/import` (JSON base64) → 변환 텍스트 미리 보기 반환, `GET /files/{fileId}` 권한 검사 후 원본 다운로드 |
 
 PDF는 `pdfjs-dist`, DOCX는 `mammoth`로 텍스트를 추출하는 것을 기본안으로 한다.
 
