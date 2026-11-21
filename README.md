@@ -11,6 +11,7 @@
 - [Canvas 학생 API QA와 교수자 테스트](docs/CANVAS_QA.md): 실제 조회 검증과 문연의 과목 분리 제한
 - [Canvas 연동 가능성](docs/CANVAS_INTEGRATION.md): 학생·교수자 진입점, 조회 범위와 학교 승인 조건
 - [무료 주소 서버 시안](docs/PREVIEW_DEPLOYMENT.md): 기존 홈서버에 별도 서비스로 운영하는 구성
+- [QA 체크리스트](docs/QA_CHECKLIST.md): 직접 점검할 항목과 버그 제보 형식
 - [목표·범위·진행 현황](docs/PROJECT_STATUS.md): 구현한 기능, 검증 범위, 남은 작업과 단계별 완료 조건
 - [동적 서버 운영 전환 안내](docs/DYNAMIC_SERVER.md): 현재 서버 구조, 배포 순서와 확장 시 필요한 변경
 
