@@ -6,7 +6,7 @@
 
 - `scripts/canvas_student_qa.py`: 기존 개인 토큰을 환경 변수 또는 `--env-file`에서 읽어 HTTPS GET만 수행한다. 선택 학기의 과목·과제 소속·본인 제출 ID·관리 권한·두 과목 간 잘못된 조합의 차단을 확인한다. 같은 출처의 제한된 경로만 허용하고 리다이렉트·잘못된 페이지네이션을 차단한다.
 - `scripts/test_canvas_student_qa.py`: 외부 URL과 학생 타인 데이터 경로 차단, 리다이렉트 차단, 페이지네이션 공격·순환에 대한 로컬 테스트.
-- `scripts/qa_course_isolation.mjs`: 실제 수업 자료와 연결하지 않은 임시 DB에서 교수자 2명·학생 1명을 만들고 수동 평가 및 현재 다과목 구조의 한계를 진단한다. 계정·DB는 끝나면 제거한다.
+- `scripts/qa_course_isolation.mjs`: 실제 수업 자료와 연결하지 않은 임시 DB에서 교수자 2명·학생 1명을 만들어 각자 과목·과제를 운영하고, 다른 교수자의 과목·제출물 접근이 차단되는지 확인한다. 계정·DB는 끝나면 제거한다.
 
 ```sh
 python3 scripts/canvas_student_qa.py --env-file /path/to/existing-private.env --term '2026년 2학기'

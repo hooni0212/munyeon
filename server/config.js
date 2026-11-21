@@ -17,5 +17,8 @@ export function deploymentConfig(env = process.env) {
     }
     origin = address.origin;
   }
-  return { host, port, origin, aiDailyLimit, aiEnabled: env.MUNYEON_AI_ENABLED === '1', trustProxy: production && env.MUNYEON_TRUST_PROXY === '1' };
+  // 실제 모델은 명시적으로 켤 때만 연결한다. 로컬 체험에서는 기본으로 모의 모델을 쓰고, 운영에서는 꺼 둔다.
+  const aiEnabled = env.MUNYEON_AI_ENABLED === '1';
+  const aiMock = !aiEnabled && (production ? env.MUNYEON_AI_MOCK === '1' : env.MUNYEON_AI_MOCK !== '0');
+  return { host, port, origin, aiDailyLimit, aiEnabled, aiMock, trustProxy: production && env.MUNYEON_TRUST_PROXY === '1' };
 }
