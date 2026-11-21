@@ -4,7 +4,7 @@ import { dirname, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isIP } from 'node:net';
 import { createApp } from './app.js';
-import { createModel } from './model.js';
+import { createMockModel, createModel } from './model.js';
 import { deploymentConfig } from './config.js';
 
 process.umask(0o077);
@@ -13,10 +13,13 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const dist = resolve(root, 'dist');
 const database = resolve(root, process.env.MUNYEON_DB || 'data/munyeon.sqlite');
 await mkdir(dirname(database), { recursive: true });
-const app = createApp({ database, origin: config.origin, aiDailyLimit: config.aiDailyLimit, model: createModel(config.aiEnabled ? {
+const model = config.aiMock ? createMockModel() : createModel(config.aiEnabled ? {
   baseUrl: process.env.MUNYEON_AI_URL, model: process.env.MUNYEON_AI_MODEL, key: process.env.MUNYEON_AI_KEY,
   outputLimitField: process.env.MUNYEON_AI_OUTPUT_LIMIT_FIELD,
-} : {}) });
+} : {});
+const app = createApp({ database, origin: config.origin, aiDailyLimit: config.aiDailyLimit, model });
+// 파일 업로드(base64)만 큰 요청을 받는다.
+const bodyLimit = path => /\/(import|extract)$/.test(path) ? 15_000_000 : 600_000;
 const media = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 
 const server = createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, async (req, res) => {
@@ -37,7 +40,7 @@ const server = createServer({ requestTimeout: 30_000, headersTimeout: 10_000 }, 
       let size = 0;
       for await (const chunk of req) {
         size += chunk.length;
-        if (size > 160_000) {
+        if (size > bodyLimit(url.pathname)) {
           res.writeHead(413, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: '요청이 너무 커요.' }));
           return;
